@@ -1,0 +1,8 @@
+{
+  "form": "solo_form",
+  "language": "en",
+  "translations": {
+    "key1": "Translation 1",
+    "key2": "Translation 2"
+  }
+}

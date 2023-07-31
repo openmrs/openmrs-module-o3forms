@@ -1,0 +1,22 @@
+{
+  "name": "root_form",
+  "uuid": "xxxx",
+  "processor": "EncounterFormProcessor",
+  "pages": [
+    {
+      "label": "Root Page",
+      "sections": [
+        {
+          "label": "Referenced Section",
+          "questions": []
+        }
+      ]
+    }
+  ],
+  "referencedForms": [
+    {
+      "formName": "referenced_form",
+      "alias": "ref"
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "form": "referenced_form",
+  "language": "en",
+  "translations": {
+    "key2": "This should not be displayed",
+    "key3": "Translation 3",
+    "key4": "Translation 4"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "name": "root_form",
+  "uuid": "xxxx",
+  "processor": "EncounterFormProcessor",
+  "pages": [
+    {
+      "reference": {
+        "form": "ref",
+        "page": "Referenced Page"
+      }
+    }
+  ],
+  "referencedForms": [
+    {
+      "formName": "referenced_form",
+      "alias": "ref"
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "name": "referenced_form",
+  "uuid": "xxxx",
+  "processor": "EncounterFormProcessor",
+  "pages": [
+    {
+      "label": "Referenced Page",
+      "sections": [
+        {
+          "label": "Referenced Section",
+          "questions": [
+            {
+              "id": "referencedQuestion",
+              "type": "obs",
+              "questionOptions": {
+                "concept": "e8132ea3-7fec-46fa-9486-05611acc861c",
+                "rendering": "text"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

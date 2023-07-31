@@ -1,0 +1,37 @@
+{
+  "name": "form",
+  "uuid": "xxxx",
+  "processor": "EncounterFormProcessor",
+  "pages": [
+    {
+      "label": "Root Page",
+      "sections": [
+        {
+          "label": "Root Section",
+          "questions": [
+            {
+              "label": "Question 1",
+              "id": "weight",
+              "type": "obs",
+              "concept": "c607c80f-1ea9-4da3-bb88-6276ce8868dd",
+              "questionOptions": {
+                "concept": "a09ab2c5-878e-4905-b25d-5784167d0216",
+                "answers": [
+                  {
+                    "concept": "b055abd8-a420-4a11-8b98-02ee170a7b54",
+                    "label": "YES"
+                  },
+                  {
+                    "concept": "934d8ef1-ea43-4f98-906e-dd03d5faaeb4",
+                    "label": "NO"
+                  }
+                ],
+                "rendering": "select"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "name": "referenced_form",
+  "uuid": "xxxx",
+  "processor": "EncounterFormProcessor",
+  "pages": [
+    {
+      "label": "Referenced Page",
+      "sections": [
+        {
+          "label": "Referenced Section",
+          "questions": [
+            {
+              "id": "referencedQuestion",
+              "type": "obs",
+              "questionOptions": {
+                "concept": "e8132ea3-7fec-46fa-9486-05611acc861c",
+                "rendering": "text"
+              }
+            },
+            {
+              "id": "excludedQuestion",
+              "type": "obs",
+              "questionOptions": {
+                "concept": "74c014dd-dc9f-4e79-9563-e0e248274f0f`",
+                "rendering": "text"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
