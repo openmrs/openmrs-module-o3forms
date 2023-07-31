@@ -20,4 +20,3 @@ This feature allows the frontend to request an O3 form and receive a form object
 * Metadata about concepts used in the forms
 
 The goal of this feature is to reduce the overall traffic between a browser and the OpenMRS server involved in loading a form.
-m
