@@ -7,7 +7,14 @@
  * Copyright (C) OpenMRS Inc. OpenMRS is a registered trademark and the OpenMRS
  * graphic logo is a trademark of OpenMRS Inc.
  */
-package org.openmrs.module.o3;
+package org.openmrs.module.o3forms.api;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasEntry;
+import static org.hamcrest.Matchers.hasKey;
+import static org.hamcrest.Matchers.notNullValue;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
@@ -21,18 +28,10 @@ import org.openmrs.api.DatatypeService;
 import org.openmrs.api.FormService;
 import org.openmrs.api.context.Context;
 import org.openmrs.api.db.ClobDatatypeStorage;
-import org.openmrs.module.o3.api.O3FormsService;
 import org.openmrs.module.webservices.rest.SimpleObject;
 import org.openmrs.web.test.jupiter.BaseModuleWebContextSensitiveTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.allOf;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasEntry;
-import static org.hamcrest.Matchers.hasKey;
-import static org.hamcrest.Matchers.notNullValue;
 
 public class O3FormsServiceTest extends BaseModuleWebContextSensitiveTest {
 	
@@ -71,7 +70,7 @@ public class O3FormsServiceTest extends BaseModuleWebContextSensitiveTest {
 	private static final String REFERENCED_FORM_TRANSLATIONS_EN_CLOB_UUID = "24ccfd96-c022-4c42-9019-1f026a4b3ab6";
 	
 	@Autowired
-	@Qualifier("o3.O3FormsService")
+	@Qualifier("o3forms.O3FormsService")
 	O3FormsService o3FormsService;
 	
 	@Test
@@ -82,7 +81,7 @@ public class O3FormsServiceTest extends BaseModuleWebContextSensitiveTest {
 		
 		{
 			String jsonForm = IOUtils.resourceToString("/forms/test-schemas/adult-return/adult-return.json",
-					StandardCharsets.UTF_8);
+			    StandardCharsets.UTF_8);
 			ClobDatatypeStorage datatypeStorage = new ClobDatatypeStorage();
 			datatypeStorage.setValue(jsonForm);
 			datatypeStorage.setUuid(ADULT_RETURN_CLOB_UUID);
@@ -102,7 +101,7 @@ public class O3FormsServiceTest extends BaseModuleWebContextSensitiveTest {
 		
 		{
 			String jsonForm = IOUtils.resourceToString("/forms/test-schemas/adult-return/component-art.json",
-					StandardCharsets.UTF_8);
+			    StandardCharsets.UTF_8);
 			ClobDatatypeStorage datatypeStorage = new ClobDatatypeStorage();
 			datatypeStorage.setValue(jsonForm);
 			datatypeStorage.setUuid(COMPONENT_ART_CLOB_UUID);
@@ -122,7 +121,7 @@ public class O3FormsServiceTest extends BaseModuleWebContextSensitiveTest {
 		
 		{
 			String jsonForm = IOUtils.resourceToString("/forms/test-schemas/adult-return/component-hospitalization.json",
-					StandardCharsets.UTF_8);
+			    StandardCharsets.UTF_8);
 			ClobDatatypeStorage datatypeStorage = new ClobDatatypeStorage();
 			datatypeStorage.setValue(jsonForm);
 			datatypeStorage.setUuid(COMPONENT_HOSPITALIZATION_CLOB_UUID);
@@ -142,7 +141,7 @@ public class O3FormsServiceTest extends BaseModuleWebContextSensitiveTest {
 		
 		{
 			String jsonForm = IOUtils.resourceToString("/forms/test-schemas/adult-return/component-preclinic-review.json",
-					StandardCharsets.UTF_8);
+			    StandardCharsets.UTF_8);
 			ClobDatatypeStorage datatypeStorage = new ClobDatatypeStorage();
 			datatypeStorage.setValue(jsonForm);
 			datatypeStorage.setUuid(COMPONENT_PRECLINIC_REVIEW_CLOB_UUID);
@@ -166,9 +165,8 @@ public class O3FormsServiceTest extends BaseModuleWebContextSensitiveTest {
 		// assert
 		assertThat(result, notNullValue());
 		
-		String referenceCompiledVersion = IOUtils.resourceToString(
-				"/forms/test-schemas/adult-return/adult-return-compiled.json",
-				StandardCharsets.UTF_8);
+		String referenceCompiledVersion = IOUtils
+		        .resourceToString("/forms/test-schemas/adult-return/adult-return-compiled.json", StandardCharsets.UTF_8);
 		ObjectMapper objectMapper = new ObjectMapper();
 		assertThat(objectMapper.valueToTree(result), equalTo(objectMapper.readTree(referenceCompiledVersion)));
 	}
@@ -181,7 +179,7 @@ public class O3FormsServiceTest extends BaseModuleWebContextSensitiveTest {
 		
 		{
 			String jsonForm = IOUtils.resourceToString("/forms/test-schemas/page-reference/root-form.json",
-					StandardCharsets.UTF_8);
+			    StandardCharsets.UTF_8);
 			ClobDatatypeStorage datatypeStorage = new ClobDatatypeStorage();
 			datatypeStorage.setValue(jsonForm);
 			datatypeStorage.setUuid(PAGE_REF_ROOT_FORM_CLOB_UUID);
@@ -201,7 +199,7 @@ public class O3FormsServiceTest extends BaseModuleWebContextSensitiveTest {
 		
 		{
 			String jsonForm = IOUtils.resourceToString("/forms/test-schemas/page-reference/referenced-form.json",
-					StandardCharsets.UTF_8);
+			    StandardCharsets.UTF_8);
 			ClobDatatypeStorage datatypeStorage = new ClobDatatypeStorage();
 			datatypeStorage.setValue(jsonForm);
 			datatypeStorage.setUuid(PAGE_REF_REFERENCED_FORM_CLOB_UUID);
@@ -225,9 +223,8 @@ public class O3FormsServiceTest extends BaseModuleWebContextSensitiveTest {
 		// assert
 		assertThat(result, notNullValue());
 		
-		String referenceCompiledVersion = IOUtils.resourceToString(
-				"/forms/test-schemas/page-reference/root-form-compiled.json",
-				StandardCharsets.UTF_8);
+		String referenceCompiledVersion = IOUtils
+		        .resourceToString("/forms/test-schemas/page-reference/root-form-compiled.json", StandardCharsets.UTF_8);
 		ObjectMapper objectMapper = new ObjectMapper();
 		assertThat(objectMapper.valueToTree(result), equalTo(objectMapper.readTree(referenceCompiledVersion)));
 	}
@@ -240,7 +237,7 @@ public class O3FormsServiceTest extends BaseModuleWebContextSensitiveTest {
 		
 		{
 			String jsonForm = IOUtils.resourceToString("/forms/test-schemas/section-reference/root-form.json",
-					StandardCharsets.UTF_8);
+			    StandardCharsets.UTF_8);
 			ClobDatatypeStorage datatypeStorage = new ClobDatatypeStorage();
 			datatypeStorage.setValue(jsonForm);
 			datatypeStorage.setUuid(SECTION_REF_ROOT_FORM_CLOB_UUID);
@@ -260,7 +257,7 @@ public class O3FormsServiceTest extends BaseModuleWebContextSensitiveTest {
 		
 		{
 			String jsonForm = IOUtils.resourceToString("/forms/test-schemas/section-reference/referenced-form.json",
-					StandardCharsets.UTF_8);
+			    StandardCharsets.UTF_8);
 			ClobDatatypeStorage datatypeStorage = new ClobDatatypeStorage();
 			datatypeStorage.setValue(jsonForm);
 			datatypeStorage.setUuid(SECTION_REF_REFERENCED_FORM_CLOB_UUID);
@@ -284,9 +281,8 @@ public class O3FormsServiceTest extends BaseModuleWebContextSensitiveTest {
 		// assert
 		assertThat(result, notNullValue());
 		
-		String referenceCompiledVersion = IOUtils.resourceToString(
-				"/forms/test-schemas/section-reference/root-form-compiled.json",
-				StandardCharsets.UTF_8);
+		String referenceCompiledVersion = IOUtils
+		        .resourceToString("/forms/test-schemas/section-reference/root-form-compiled.json", StandardCharsets.UTF_8);
 		ObjectMapper objectMapper = new ObjectMapper();
 		assertThat(objectMapper.valueToTree(result), equalTo(objectMapper.readTree(referenceCompiledVersion)));
 	}
@@ -299,7 +295,7 @@ public class O3FormsServiceTest extends BaseModuleWebContextSensitiveTest {
 		
 		{
 			String jsonForm = IOUtils.resourceToString("/forms/test-schemas/question-reference/root-form.json",
-					StandardCharsets.UTF_8);
+			    StandardCharsets.UTF_8);
 			ClobDatatypeStorage datatypeStorage = new ClobDatatypeStorage();
 			datatypeStorage.setValue(jsonForm);
 			datatypeStorage.setUuid(QUESTION_REF_ROOT_FORM_CLOB_UUID);
@@ -319,7 +315,7 @@ public class O3FormsServiceTest extends BaseModuleWebContextSensitiveTest {
 		
 		{
 			String jsonForm = IOUtils.resourceToString("/forms/test-schemas/question-reference/referenced-form.json",
-					StandardCharsets.UTF_8);
+			    StandardCharsets.UTF_8);
 			ClobDatatypeStorage datatypeStorage = new ClobDatatypeStorage();
 			datatypeStorage.setValue(jsonForm);
 			datatypeStorage.setUuid(QUESTION_REF_REFERENCED_FORM_CLOB_UUID);
@@ -343,8 +339,8 @@ public class O3FormsServiceTest extends BaseModuleWebContextSensitiveTest {
 		// assert
 		assertThat(result, notNullValue());
 		
-		String referenceCompiledVersion = IOUtils.resourceToString(
-				"/forms/test-schemas/question-reference/root-form-compiled.json", StandardCharsets.UTF_8);
+		String referenceCompiledVersion = IOUtils
+		        .resourceToString("/forms/test-schemas/question-reference/root-form-compiled.json", StandardCharsets.UTF_8);
 		ObjectMapper objectMapper = new ObjectMapper();
 		assertThat(objectMapper.valueToTree(result), equalTo(objectMapper.readTree(referenceCompiledVersion)));
 	}
@@ -357,7 +353,7 @@ public class O3FormsServiceTest extends BaseModuleWebContextSensitiveTest {
 		
 		{
 			String jsonForm = IOUtils.resourceToString("/forms/test-schemas/exclusions/root-form-page-exclusion.json",
-					StandardCharsets.UTF_8);
+			    StandardCharsets.UTF_8);
 			ClobDatatypeStorage datatypeStorage = new ClobDatatypeStorage();
 			datatypeStorage.setValue(jsonForm);
 			datatypeStorage.setUuid(EXCLUSION_ROOT_FORM_CLOB_UUID);
@@ -377,7 +373,7 @@ public class O3FormsServiceTest extends BaseModuleWebContextSensitiveTest {
 		
 		{
 			String jsonForm = IOUtils.resourceToString("/forms/test-schemas/exclusions/referenced-form.json",
-					StandardCharsets.UTF_8);
+			    StandardCharsets.UTF_8);
 			ClobDatatypeStorage datatypeStorage = new ClobDatatypeStorage();
 			datatypeStorage.setValue(jsonForm);
 			datatypeStorage.setUuid(EXCLUSION_REFERENCED_FORM_CLOB_UUID);
@@ -401,9 +397,8 @@ public class O3FormsServiceTest extends BaseModuleWebContextSensitiveTest {
 		// assert
 		assertThat(result, notNullValue());
 		
-		String referenceCompiledVersion = IOUtils.resourceToString(
-				"/forms/test-schemas/exclusions/root-form-page-compiled.json",
-				StandardCharsets.UTF_8);
+		String referenceCompiledVersion = IOUtils
+		        .resourceToString("/forms/test-schemas/exclusions/root-form-page-compiled.json", StandardCharsets.UTF_8);
 		ObjectMapper objectMapper = new ObjectMapper();
 		assertThat(objectMapper.valueToTree(result), equalTo(objectMapper.readTree(referenceCompiledVersion)));
 	}
@@ -416,7 +411,7 @@ public class O3FormsServiceTest extends BaseModuleWebContextSensitiveTest {
 		
 		{
 			String jsonForm = IOUtils.resourceToString("/forms/test-schemas/exclusions/root-form-section-exclusion.json",
-					StandardCharsets.UTF_8);
+			    StandardCharsets.UTF_8);
 			ClobDatatypeStorage datatypeStorage = new ClobDatatypeStorage();
 			datatypeStorage.setValue(jsonForm);
 			datatypeStorage.setUuid(EXCLUSION_ROOT_FORM_CLOB_UUID);
@@ -436,7 +431,7 @@ public class O3FormsServiceTest extends BaseModuleWebContextSensitiveTest {
 		
 		{
 			String jsonForm = IOUtils.resourceToString("/forms/test-schemas/exclusions/referenced-form.json",
-					StandardCharsets.UTF_8);
+			    StandardCharsets.UTF_8);
 			ClobDatatypeStorage datatypeStorage = new ClobDatatypeStorage();
 			datatypeStorage.setValue(jsonForm);
 			datatypeStorage.setUuid(EXCLUSION_REFERENCED_FORM_CLOB_UUID);
@@ -460,8 +455,8 @@ public class O3FormsServiceTest extends BaseModuleWebContextSensitiveTest {
 		// assert
 		assertThat(result, notNullValue());
 		
-		String referenceCompiledVersion = IOUtils.resourceToString(
-				"/forms/test-schemas/exclusions/root-form-section-compiled.json", StandardCharsets.UTF_8);
+		String referenceCompiledVersion = IOUtils
+		        .resourceToString("/forms/test-schemas/exclusions/root-form-section-compiled.json", StandardCharsets.UTF_8);
 		ObjectMapper objectMapper = new ObjectMapper();
 		assertThat(objectMapper.valueToTree(result), equalTo(objectMapper.readTree(referenceCompiledVersion)));
 	}
@@ -472,7 +467,8 @@ public class O3FormsServiceTest extends BaseModuleWebContextSensitiveTest {
 		DatatypeService datatypeService = Context.getDatatypeService();
 		FormService formService = Context.getFormService();
 		
-		String jsonForm = IOUtils.resourceToString("/forms/test-schemas/concept-references/form.json", StandardCharsets.UTF_8);
+		String jsonForm = IOUtils.resourceToString("/forms/test-schemas/concept-references/form.json",
+		    StandardCharsets.UTF_8);
 		ClobDatatypeStorage datatypeStorage = new ClobDatatypeStorage();
 		datatypeStorage.setValue(jsonForm);
 		datatypeStorage.setUuid(ROOT_FORM_CLOB_UUID);
@@ -499,16 +495,16 @@ public class O3FormsServiceTest extends BaseModuleWebContextSensitiveTest {
 		// all concepts defined in the standard test data
 		assertThat(result, hasKey("c607c80f-1ea9-4da3-bb88-6276ce8868dd"));
 		assertThat((Map<String, String>) result.get("c607c80f-1ea9-4da3-bb88-6276ce8868dd"),
-				allOf(hasEntry("uuid", "c607c80f-1ea9-4da3-bb88-6276ce8868dd"), hasEntry("display", "WEIGHT (KG)")));
+		    allOf(hasEntry("uuid", "c607c80f-1ea9-4da3-bb88-6276ce8868dd"), hasEntry("display", "WEIGHT (KG)")));
 		assertThat(result, hasKey("a09ab2c5-878e-4905-b25d-5784167d0216"));
 		assertThat((Map<String, String>) result.get("a09ab2c5-878e-4905-b25d-5784167d0216"),
-				allOf(hasEntry("uuid", "a09ab2c5-878e-4905-b25d-5784167d0216"), hasEntry("display", "CD4 COUNT")));
+		    allOf(hasEntry("uuid", "a09ab2c5-878e-4905-b25d-5784167d0216"), hasEntry("display", "CD4 COUNT")));
 		assertThat(result, hasKey("b055abd8-a420-4a11-8b98-02ee170a7b54"));
 		assertThat((Map<String, String>) result.get("b055abd8-a420-4a11-8b98-02ee170a7b54"),
-				allOf(hasEntry("uuid", "b055abd8-a420-4a11-8b98-02ee170a7b54"), hasEntry("display", "YES")));
+		    allOf(hasEntry("uuid", "b055abd8-a420-4a11-8b98-02ee170a7b54"), hasEntry("display", "YES")));
 		assertThat(result, hasKey("934d8ef1-ea43-4f98-906e-dd03d5faaeb4"));
 		assertThat((Map<String, String>) result.get("934d8ef1-ea43-4f98-906e-dd03d5faaeb4"),
-				allOf(hasEntry("uuid", "934d8ef1-ea43-4f98-906e-dd03d5faaeb4"), hasEntry("display", "NO")));
+		    allOf(hasEntry("uuid", "934d8ef1-ea43-4f98-906e-dd03d5faaeb4"), hasEntry("display", "NO")));
 	}
 	
 	@Test
@@ -518,15 +514,15 @@ public class O3FormsServiceTest extends BaseModuleWebContextSensitiveTest {
 		FormService formService = Context.getFormService();
 		
 		{
-			String jsonForm = IOUtils.resourceToString("/forms/test-schemas/translations/solo-form.json", StandardCharsets.UTF_8);
+			String jsonForm = IOUtils.resourceToString("/forms/test-schemas/translations/solo-form.json",
+			    StandardCharsets.UTF_8);
 			ClobDatatypeStorage datatypeStorage = new ClobDatatypeStorage();
 			datatypeStorage.setValue(jsonForm);
 			datatypeStorage.setUuid(SOLO_FORM_CLOB_UUID);
 			datatypeService.saveClobDatatypeStorage(datatypeStorage);
 			
 			String jsonTranslations = IOUtils.resourceToString(
-					"/forms/test-schemas/translations/solo-form-translations-en.json",
-					StandardCharsets.UTF_8);
+			    "/forms/test-schemas/translations/solo-form-translations-en.json", StandardCharsets.UTF_8);
 			ClobDatatypeStorage datatypeStorageTranslations = new ClobDatatypeStorage();
 			datatypeStorageTranslations.setValue(jsonTranslations);
 			datatypeStorageTranslations.setUuid(SOLO_FORM_TRANSLATIONS_EN_CLOB_UUID);
@@ -566,15 +562,15 @@ public class O3FormsServiceTest extends BaseModuleWebContextSensitiveTest {
 		FormService formService = Context.getFormService();
 		
 		{
-			String jsonForm = IOUtils.resourceToString("/forms/test-schemas/translations/root-form.json", StandardCharsets.UTF_8);
+			String jsonForm = IOUtils.resourceToString("/forms/test-schemas/translations/root-form.json",
+			    StandardCharsets.UTF_8);
 			ClobDatatypeStorage datatypeStorage = new ClobDatatypeStorage();
 			datatypeStorage.setValue(jsonForm);
 			datatypeStorage.setUuid(ROOT_FORM_CLOB_UUID);
 			datatypeService.saveClobDatatypeStorage(datatypeStorage);
 			
 			String jsonTranslations = IOUtils.resourceToString(
-					"/forms/test-schemas/translations/root-form-translations-en.json",
-					StandardCharsets.UTF_8);
+			    "/forms/test-schemas/translations/root-form-translations-en.json", StandardCharsets.UTF_8);
 			ClobDatatypeStorage datatypeStorageTranslations = new ClobDatatypeStorage();
 			datatypeStorageTranslations.setValue(jsonTranslations);
 			datatypeStorageTranslations.setUuid(ROOT_FORM_TRANSLATIONS_EN_CLOB_UUID);
@@ -599,7 +595,7 @@ public class O3FormsServiceTest extends BaseModuleWebContextSensitiveTest {
 		}
 		{
 			String jsonTranslations = IOUtils.resourceToString(
-					"/forms/test-schemas/translations/referenced-form-translations-en.json", StandardCharsets.UTF_8);
+			    "/forms/test-schemas/translations/referenced-form-translations-en.json", StandardCharsets.UTF_8);
 			ClobDatatypeStorage datatypeStorageTranslations = new ClobDatatypeStorage();
 			datatypeStorageTranslations.setValue(jsonTranslations);
 			datatypeStorageTranslations.setUuid(REFERENCED_FORM_TRANSLATIONS_EN_CLOB_UUID);

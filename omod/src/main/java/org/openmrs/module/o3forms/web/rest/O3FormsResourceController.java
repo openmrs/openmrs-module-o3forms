@@ -1,12 +1,24 @@
-package org.openmrs.module.o3.web.rest;
+/*
+ * This Source Code Form is subject to the terms of the Mozilla Public License,
+ * v. 2.0. If a copy of the MPL was not distributed with this file, You can
+ * obtain one at http://mozilla.org/MPL/2.0/. OpenMRS is also distributed under
+ * the terms of the Healthcare Disclaimer located at http://openmrs.org/license.
+ *
+ * Copyright (C) OpenMRS Inc. OpenMRS is a registered trademark and the OpenMRS
+ * graphic logo is a trademark of OpenMRS Inc.
+ */
+package org.openmrs.module.o3forms.web.rest;
+
+import static org.openmrs.module.o3forms.O3FormsConstants.DEFAULT_FORMAT;
+import static org.openmrs.module.o3forms.O3FormsWebConstants.REST_NAMESPACE;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.openmrs.api.context.Context;
-import org.openmrs.module.o3.api.exceptions.FormResourcesNotFoundException;
-import org.openmrs.module.o3.api.exceptions.FormSchemaNotFoundException;
-import org.openmrs.module.o3.api.O3FormsService;
+import org.openmrs.module.o3forms.api.O3FormsService;
+import org.openmrs.module.o3forms.api.exceptions.FormResourcesNotFoundException;
+import org.openmrs.module.o3forms.api.exceptions.FormSchemaNotFoundException;
 import org.openmrs.module.webservices.rest.SimpleObject;
 import org.openmrs.module.webservices.rest.web.RestConstants;
 import org.openmrs.module.webservices.rest.web.api.RestService;
@@ -21,9 +33,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import static org.openmrs.module.o3.O3Constants.DEFAULT_FORMAT;
-import static org.openmrs.module.o3.O3WebConstants.REST_NAMESPACE;
-
 @Controller
 @RequestMapping("/rest/" + RestConstants.VERSION_1 + REST_NAMESPACE + "/forms/{formNameOrUuid}")
 public class O3FormsResourceController extends BaseRestController {
@@ -35,8 +44,8 @@ public class O3FormsResourceController extends BaseRestController {
 	@GetMapping
 	@ResponseBody
 	public SimpleObject getO3Form(@PathVariable("formNameOrUuid") String formNameOrUuid,
-			@RequestParam(defaultValue = "true") String includeConceptReferences, HttpServletRequest request,
-			HttpServletResponse response) {
+	        @RequestParam(defaultValue = "true") String includeConceptReferences, HttpServletRequest request,
+	        HttpServletResponse response) {
 		// no cache actually means must revalidate; intended to trigger 304s and If-None-Matched when requesting forms
 		response.setHeader("Cache-Control", "no-cache; private");
 		

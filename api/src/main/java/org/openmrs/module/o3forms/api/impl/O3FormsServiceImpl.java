@@ -1,12 +1,30 @@
-/**
+/*
  * This Source Code Form is subject to the terms of the Mozilla Public License,
  * v. 2.0. If a copy of the MPL was not distributed with this file, You can
  * obtain one at http://mozilla.org/MPL/2.0/. OpenMRS is also distributed under
  * the terms of the Healthcare Disclaimer located at http://openmrs.org/license.
+ *
  * Copyright (C) OpenMRS Inc. OpenMRS is a registered trademark and the OpenMRS
  * graphic logo is a trademark of OpenMRS Inc.
  */
-package org.openmrs.module.o3.api.impl;
+package org.openmrs.module.o3forms.api.impl;
+
+import static org.openmrs.module.o3forms.O3FormsConstants.DEFAULT_FORMAT;
+import static org.openmrs.module.o3forms.O3FormsConstants.SCHEMA_KEY_ALIAS;
+import static org.openmrs.module.o3forms.O3FormsConstants.SCHEMA_KEY_ANSWERS;
+import static org.openmrs.module.o3forms.O3FormsConstants.SCHEMA_KEY_CONCEPT;
+import static org.openmrs.module.o3forms.O3FormsConstants.SCHEMA_KEY_FORM;
+import static org.openmrs.module.o3forms.O3FormsConstants.SCHEMA_KEY_FORM_NAME;
+import static org.openmrs.module.o3forms.O3FormsConstants.SCHEMA_KEY_LABEL;
+import static org.openmrs.module.o3forms.O3FormsConstants.SCHEMA_KEY_PAGE;
+import static org.openmrs.module.o3forms.O3FormsConstants.SCHEMA_KEY_PAGES;
+import static org.openmrs.module.o3forms.O3FormsConstants.SCHEMA_KEY_QUESTIONS;
+import static org.openmrs.module.o3forms.O3FormsConstants.SCHEMA_KEY_QUESTION_ID;
+import static org.openmrs.module.o3forms.O3FormsConstants.SCHEMA_KEY_QUESTION_OPTIONS;
+import static org.openmrs.module.o3forms.O3FormsConstants.SCHEMA_KEY_REFERENCE;
+import static org.openmrs.module.o3forms.O3FormsConstants.SCHEMA_KEY_REFERENCED_FORMS;
+import static org.openmrs.module.o3forms.O3FormsConstants.SCHEMA_KEY_SECTION;
+import static org.openmrs.module.o3forms.O3FormsConstants.SCHEMA_KEY_SECTIONS;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -31,10 +49,10 @@ import org.openmrs.api.FormService;
 import org.openmrs.api.context.Context;
 import org.openmrs.api.db.ClobDatatypeStorage;
 import org.openmrs.api.impl.BaseOpenmrsService;
-import org.openmrs.module.o3.api.exceptions.FormResourcesNotFoundException;
-import org.openmrs.module.o3.api.exceptions.FormSchemaNotFoundException;
-import org.openmrs.module.o3.api.exceptions.FormSchemaReadException;
-import org.openmrs.module.o3.api.O3FormsService;
+import org.openmrs.module.o3forms.api.O3FormsService;
+import org.openmrs.module.o3forms.api.exceptions.FormResourcesNotFoundException;
+import org.openmrs.module.o3forms.api.exceptions.FormSchemaNotFoundException;
+import org.openmrs.module.o3forms.api.exceptions.FormSchemaReadException;
 import org.openmrs.module.webservices.rest.SimpleObject;
 import org.openmrs.module.webservices.rest.web.ConversionUtil;
 import org.openmrs.module.webservices.rest.web.representation.CustomRepresentation;
@@ -44,23 +62,6 @@ import org.openmrs.util.OpenmrsUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Transactional;
-
-import static org.openmrs.module.o3.O3Constants.DEFAULT_FORMAT;
-import static org.openmrs.module.o3.O3Constants.SCHEMA_KEY_ALIAS;
-import static org.openmrs.module.o3.O3Constants.SCHEMA_KEY_ANSWERS;
-import static org.openmrs.module.o3.O3Constants.SCHEMA_KEY_CONCEPT;
-import static org.openmrs.module.o3.O3Constants.SCHEMA_KEY_FORM;
-import static org.openmrs.module.o3.O3Constants.SCHEMA_KEY_FORM_NAME;
-import static org.openmrs.module.o3.O3Constants.SCHEMA_KEY_LABEL;
-import static org.openmrs.module.o3.O3Constants.SCHEMA_KEY_PAGE;
-import static org.openmrs.module.o3.O3Constants.SCHEMA_KEY_PAGES;
-import static org.openmrs.module.o3.O3Constants.SCHEMA_KEY_QUESTIONS;
-import static org.openmrs.module.o3.O3Constants.SCHEMA_KEY_QUESTION_ID;
-import static org.openmrs.module.o3.O3Constants.SCHEMA_KEY_QUESTION_OPTIONS;
-import static org.openmrs.module.o3.O3Constants.SCHEMA_KEY_REFERENCE;
-import static org.openmrs.module.o3.O3Constants.SCHEMA_KEY_REFERENCED_FORMS;
-import static org.openmrs.module.o3.O3Constants.SCHEMA_KEY_SECTION;
-import static org.openmrs.module.o3.O3Constants.SCHEMA_KEY_SECTIONS;
 
 public class O3FormsServiceImpl extends BaseOpenmrsService implements O3FormsService {
 	
@@ -96,7 +97,8 @@ public class O3FormsServiceImpl extends BaseOpenmrsService implements O3FormsSer
 						continue;
 					}
 					
-					@SuppressWarnings("unchecked") Map<String, Object> pageMap = (Map<String, Object>) page;
+					@SuppressWarnings("unchecked")
+					Map<String, Object> pageMap = (Map<String, Object>) page;
 					Set<String> pageExcludedQuestions = new HashSet<>();
 					if (pageMap.containsKey(SCHEMA_KEY_REFERENCE)) {
 						Map<?, ?> referenceMap = getReferenceObjectFromItem(pageMap).orElse(null);
@@ -117,8 +119,8 @@ public class O3FormsServiceImpl extends BaseOpenmrsService implements O3FormsSer
 							continue;
 						}
 						
-						Map<String, Object> referencedForm = getReferencedFormForItem(referencedForms, referenceMap).orElse(
-								null);
+						Map<String, Object> referencedForm = getReferencedFormForItem(referencedForms, referenceMap)
+						        .orElse(null);
 						
 						if (referencedForm == null) {
 							continue;
@@ -146,7 +148,8 @@ public class O3FormsServiceImpl extends BaseOpenmrsService implements O3FormsSer
 								continue;
 							}
 							
-							@SuppressWarnings("unchecked") Map<String, Object> sectionMap = (Map<String, Object>) section;
+							@SuppressWarnings("unchecked")
+							Map<String, Object> sectionMap = (Map<String, Object>) section;
 							Set<String> sectionExcludedQuestions = new HashSet<>(pageExcludedQuestions);
 							
 							// wrapped in a one-time do... while loop so that continue statements only break out of the
@@ -163,19 +166,19 @@ public class O3FormsServiceImpl extends BaseOpenmrsService implements O3FormsSer
 									Object referencePageObject = referenceMap.get(SCHEMA_KEY_PAGE);
 									if (!(referencePageObject instanceof String)) {
 										log.error("Form compilation - reference page is not a JSON string: {}",
-												referencePageObject);
+										    referencePageObject);
 										continue;
 									}
 									
 									Object referenceSectionObject = referenceMap.get(SCHEMA_KEY_SECTION);
 									if (!(referenceSectionObject instanceof String)) {
 										log.error("Form compilation - reference section is not a JSON string: {}",
-												referencePageObject);
+										    referencePageObject);
 										continue;
 									}
 									
 									Map<String, Object> referencedForm = getReferencedFormForItem(referencedForms,
-											referenceMap).orElse(null);
+									    referenceMap).orElse(null);
 									
 									if (referencedForm == null) {
 										continue;
@@ -184,10 +187,10 @@ public class O3FormsServiceImpl extends BaseOpenmrsService implements O3FormsSer
 									sectionExcludedQuestions.addAll(getExclusions(referenceMap));
 									
 									getSectionByPageAndLabel(referencedForm, (String) referencePageObject,
-											(String) referenceSectionObject).map(s -> {
-										sectionMap.putAll(s);
-										return s;
-									});
+									    (String) referenceSectionObject).map(s -> {
+										    sectionMap.putAll(s);
+										    return s;
+									    });
 								}
 							} while (false);
 							
@@ -205,7 +208,8 @@ public class O3FormsServiceImpl extends BaseOpenmrsService implements O3FormsSer
 									continue;
 								}
 								
-								@SuppressWarnings("unchecked") Map<String, Object> questionMap = (Map<String, Object>) question;
+								@SuppressWarnings("unchecked")
+								Map<String, Object> questionMap = (Map<String, Object>) question;
 								
 								if (questionMap.containsKey(SCHEMA_KEY_REFERENCE)) {
 									Map<?, ?> referenceMap = getReferenceObjectFromItem(questionMap).orElse(null);
@@ -221,7 +225,7 @@ public class O3FormsServiceImpl extends BaseOpenmrsService implements O3FormsSer
 									}
 									
 									Map<String, Object> referencedForm = getReferencedFormForItem(referencedForms,
-											referenceMap).orElse(null);
+									    referenceMap).orElse(null);
 									
 									if (referencedForm == null) {
 										continue;
@@ -312,10 +316,10 @@ public class O3FormsServiceImpl extends BaseOpenmrsService implements O3FormsSer
 												if (answersObject instanceof List) {
 													for (Object answer : (List<?>) answersObject) {
 														if (answer instanceof Map) {
-															Object answerConceptObject = ((Map<?, ?>) answer).get(
-																	SCHEMA_KEY_CONCEPT);
+															Object answerConceptObject = ((Map<?, ?>) answer)
+															        .get(SCHEMA_KEY_CONCEPT);
 															if (answerConceptObject instanceof String
-																	&& !((String) answerConceptObject).isEmpty()) {
+															        && !((String) answerConceptObject).isEmpty()) {
 																conceptReferences.add((String) answerConceptObject);
 															}
 														}
@@ -375,12 +379,12 @@ public class O3FormsServiceImpl extends BaseOpenmrsService implements O3FormsSer
 			LinkedHashSet<Locale> locales = (LinkedHashSet<Locale>) LocaleUtility.getLocalesInOrder();
 			
 			Map<String, Object> result = referencedForms.stream()
-					.map(referencedForm -> getTranslationsByPreferredLocales(locales, referencedForm))
-					.filter(Optional::isPresent).map(Optional::get).reduce(new LinkedHashMap<String, Object>(), (acc, i) -> {
-						acc.putAll(i);
-						return acc;
-					});
-			
+			        .map(referencedForm -> getTranslationsByPreferredLocales(locales, referencedForm))
+			        .filter(Optional::isPresent).map(Optional::get).reduce(new LinkedHashMap<String, Object>(), (acc, i) -> {
+				        acc.putAll(i);
+				        return acc;
+			        });
+			        
 			getTranslationsByPreferredLocales(locales, formResources).ifPresent(result::putAll);
 			
 			return result;
@@ -388,7 +392,7 @@ public class O3FormsServiceImpl extends BaseOpenmrsService implements O3FormsSer
 	}
 	
 	private Optional<Map<String, Object>> getTranslationsByPreferredLocales(LinkedHashSet<Locale> locales,
-			Object referencedForm) {
+	        Object referencedForm) {
 		if (!(referencedForm instanceof Map)) {
 			return Optional.empty();
 		}
@@ -415,7 +419,7 @@ public class O3FormsServiceImpl extends BaseOpenmrsService implements O3FormsSer
 	}
 	
 	private Optional<Map<String, Object>> getTranslationsByPreferredLocales(LinkedHashSet<Locale> locales,
-			List<FormResource> formResources) {
+	        List<FormResource> formResources) {
 		for (Locale locale : locales) {
 			String needle = "_translations_" + locale.toLanguageTag();
 			for (FormResource resource : formResources) {
@@ -434,10 +438,10 @@ public class O3FormsServiceImpl extends BaseOpenmrsService implements O3FormsSer
 					catch (APIException e) {
 						if (resource.getForm() != null && resource.getForm().getName() != null) {
 							log.warn("Exception caught while trying to load translations for form {} in locale {}",
-									resource.getForm().getName(), locale.toLanguageTag(), e);
+							    resource.getForm().getName(), locale.toLanguageTag(), e);
 						} else {
 							log.warn("Exception caught while trying to load translations in locale {} from resource {}",
-									locale.toLanguageTag(), resource.getUuid(), e);
+							    locale.toLanguageTag(), resource.getUuid(), e);
 						}
 					}
 				}
@@ -505,8 +509,8 @@ public class O3FormsServiceImpl extends BaseOpenmrsService implements O3FormsSer
 	
 	private SimpleObject getFormSchemaFromResources(List<FormResource> formResources) {
 		return formResources.stream().filter(fr -> "JSON schema".equals(fr.getName())).findFirst()
-				.map(FormResource::getValueReference).map(O3FormsServiceImpl::loadJsonClob)
-				.orElseThrow(FormSchemaNotFoundException::new);
+		        .map(FormResource::getValueReference).map(O3FormsServiceImpl::loadJsonClob)
+		        .orElseThrow(FormSchemaNotFoundException::new);
 	}
 	
 	private Optional<List<?>> getReferencedFormList(SimpleObject formSchema) {
@@ -535,7 +539,7 @@ public class O3FormsServiceImpl extends BaseOpenmrsService implements O3FormsSer
 				
 				if (!referencedFormMap.containsKey(SCHEMA_KEY_FORM_NAME)) {
 					log.warn("Form compilation - Referenced form does not have the attribute formName: {}",
-							referencedFormMap);
+					    referencedFormMap);
 					continue;
 				}
 				
@@ -581,7 +585,7 @@ public class O3FormsServiceImpl extends BaseOpenmrsService implements O3FormsSer
 	}
 	
 	private static Optional<Map<String, Object>> getReferencedFormForItem(Map<String, Map<String, Object>> referencedForms,
-			Map<?, ?> referenceMap) {
+	        Map<?, ?> referenceMap) {
 		if (!referenceMap.containsKey(SCHEMA_KEY_FORM)) {
 			log.error("Form compilation - reference missing form attribute: {}", referenceMap);
 			return Optional.empty();
@@ -602,7 +606,7 @@ public class O3FormsServiceImpl extends BaseOpenmrsService implements O3FormsSer
 		}
 		
 		return Optional.ofNullable(
-				SerializationUtils.clone((LinkedHashMap<String, Object>) referencedForms.get(referencedFormAlias)));
+		    SerializationUtils.clone((LinkedHashMap<String, Object>) referencedForms.get(referencedFormAlias)));
 	}
 	
 	private static Optional<Map<String, Object>> getPageByLabel(Map<String, Object> formSchema, String pageLabel) {
@@ -614,7 +618,7 @@ public class O3FormsServiceImpl extends BaseOpenmrsService implements O3FormsSer
 		Object pagesObj = formSchema.get(SCHEMA_KEY_PAGES);
 		if (!(pagesObj instanceof List)) {
 			log.error("Form compilation - referenced form {} does not define pages as a JSON array: {}",
-					formSchema.get("name"), pagesObj);
+			    formSchema.get("name"), pagesObj);
 			return Optional.empty();
 		}
 		
@@ -622,18 +626,18 @@ public class O3FormsServiceImpl extends BaseOpenmrsService implements O3FormsSer
 	}
 	
 	private static Optional<Map<String, Object>> getSectionByPageAndLabel(Map<String, Object> formSchema, String pageLabel,
-			String sectionLabel) {
+	        String sectionLabel) {
 		return getPageByLabel(formSchema, pageLabel).map(page -> {
 			if (!page.containsKey(SCHEMA_KEY_SECTIONS)) {
 				log.error("Form compilation - referenced page {} in form {} does not define any sections", pageLabel,
-						formSchema.get("name"));
+				    formSchema.get("name"));
 				return null;
 			}
 			
 			Object sectionsObj = page.get(SCHEMA_KEY_SECTIONS);
 			if (!(sectionsObj instanceof List)) {
 				log.error("Form compilation - referenced page {} in form {} does not define pages as a JSON array: {}",
-						pageLabel, formSchema.get("name"), sectionsObj);
+				    pageLabel, formSchema.get("name"), sectionsObj);
 				return null;
 			}
 			
@@ -682,7 +686,8 @@ public class O3FormsServiceImpl extends BaseOpenmrsService implements O3FormsSer
 							continue;
 						}
 						
-						@SuppressWarnings("unchecked") Map<String, Object> questionMap = (Map<String, Object>) question;
+						@SuppressWarnings("unchecked")
+						Map<String, Object> questionMap = (Map<String, Object>) question;
 						
 						Object questionIdObject = questionMap.get("id");
 						
@@ -705,7 +710,7 @@ public class O3FormsServiceImpl extends BaseOpenmrsService implements O3FormsSer
 		Object referenceExcludedQuestionsObject = referenceMap.get("excludeQuestions");
 		if (referenceExcludedQuestionsObject instanceof List) {
 			return ((List<?>) referenceExcludedQuestionsObject).stream().filter(q -> q instanceof String)
-					.map(q -> (String) q).collect(Collectors.toSet());
+			        .map(q -> (String) q).collect(Collectors.toSet());
 		} else {
 			return Collections.emptySet();
 		}

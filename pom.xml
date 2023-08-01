@@ -3,10 +3,10 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.openmrs.module</groupId>
-    <artifactId>o3</artifactId>
+    <artifactId>o3forms</artifactId>
     <version>1.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
-    <name>O3</name>
+    <name>O3 Forms</name>
     <description>Additional backend functionality to help with using O3's JSON form schema.</description>
 
     <url>https://wiki.openmrs.org/x/FQ4z</url>
@@ -424,7 +424,7 @@
                         <!--suppress UnresolvedMavenProperty -->
                         <header>${main.basedir}${file.separator}resources${file.separator}license-header.txt</header>
                         <headerDefinitions>
-                            <headerDefinition>${main.basedir}${file.separator}resources${file.separatorlicense-format.xml</headerDefinition>
+                            <headerDefinition>${main.basedir}${file.separator}resources${file.separator}license-format.xml</headerDefinition>
                         </headerDefinitions>
                         <mapping>
                             <java>JAVA_STYLE</java>
@@ -502,7 +502,7 @@
                 <plugin>
                     <groupId>net.revelc.code</groupId>
                     <artifactId>impsort-maven-plugin</artifactId>
-                    <version>1.9.0</version>
+                    <version>1.6.2</version>
                     <configuration>
                         <groups>javax, java, *</groups>
                         <removeUnused>true</removeUnused>

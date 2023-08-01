@@ -1,4 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+    This Source Code Form is subject to the terms of the Mozilla Public License,
+    v. 2.0. If a copy of the MPL was not distributed with this file, You can
+    obtain one at http://mozilla.org/MPL/2.0/. OpenMRS is also distributed under
+    the terms of the Healthcare Disclaimer located at http://openmrs.org/license.
+
+    Copyright (C) OpenMRS Inc. OpenMRS is a registered trademark and the OpenMRS
+    graphic logo is a trademark of OpenMRS Inc.
+-->
 
 <!-- Beans to add to the current Application context definition -->
 
@@ -9,11 +18,11 @@
 
     <!-- Wraps O3FormsService methods in DB transactions and OpenMRS interceptors,
     which set audit info like dateCreated, changedBy, etc.-->
-    <bean id="o3.O3FormsService"
+    <bean id="o3forms.O3FormsService"
             class="org.springframework.transaction.interceptor.TransactionProxyFactoryBean">
         <property name="transactionManager" ref="transactionManager"/>
         <property name="target">
-            <bean class="org.openmrs.module.o3.api.impl.O3FormsServiceImpl" />
+            <bean class="org.openmrs.module.o3forms.api.impl.O3FormsServiceImpl" />
         </property>
         <property name="preInterceptors" ref="serviceInterceptors"/>
         <property name="transactionAttributeSource" ref="transactionAttributeSource"/>
@@ -24,8 +33,8 @@
     <bean parent="serviceContext">
         <property name="moduleService">
             <list>
-                <value>org.openmrs.module.o3.api.O3FormsService</value>
-                <ref bean="o3.O3FormsService" />
+                <value>org.openmrs.module.o3forms.api.O3FormsService</value>
+                <ref bean="o3forms.O3FormsService" />
             </list>
         </property>
     </bean>

@@ -7,7 +7,7 @@
  * Copyright (C) OpenMRS Inc. OpenMRS is a registered trademark and the OpenMRS
  * graphic logo is a trademark of OpenMRS Inc.
  */
-package org.openmrs.module.o3.api;
+package org.openmrs.module.o3forms.api;
 
 import java.util.Map;
 
@@ -37,8 +37,7 @@ public interface O3FormsService extends OpenmrsService {
 	 * }
 	 * </pre>
 	 * <p/>
-	 * E.g.,
-	 * <pre>
+	 * E.g., <pre>
 	 * {
 	 *       "reference": {
 	 *           "form": "pcr",
@@ -48,8 +47,9 @@ public interface O3FormsService extends OpenmrsService {
 	 * }
 	 * </pre>
 	 * <p/>
-	 * References the section labelled "Pre-Clinical Review" in the page labelled "Pre-Clinical Review" in the form with the
-	 * alias "pcr". After compilation, this element will be replaced with the contents of the appropriate section.
+	 * References the section labelled "Pre-Clinical Review" in the page labelled "Pre-Clinical Review"
+	 * in the form with the alias "pcr". After compilation, this element will be replaced with the
+	 * contents of the appropriate section.
 	 *
 	 * @param formNameOrUuid The name or UUID of the form
 	 * @return A {@link SimpleObject} that represents the compiled form contents
@@ -70,8 +70,7 @@ public interface O3FormsService extends OpenmrsService {
 	 * }
 	 * </pre>
 	 * <p/>
-	 * E.g.,
-	 * <pre>
+	 * E.g., <pre>
 	 * {
 	 *       "reference": {
 	 *           "form": "pcr",
@@ -81,28 +80,35 @@ public interface O3FormsService extends OpenmrsService {
 	 * }
 	 * </pre>
 	 * <p/>
-	 * References the section labelled "Pre-Clinical Review" in the page labelled "Pre-Clinical Review" in the form with the
-	 * alias "pcr". After compilation, this element will be replaced with the contents of the appropriate section.
+	 * References the section labelled "Pre-Clinical Review" in the page labelled "Pre-Clinical Review"
+	 * in the form with the alias "pcr". After compilation, this element will be replaced with the
+	 * contents of the appropriate section.
 	 *
 	 * @param form The form object
 	 * @return A {@link SimpleObject} that represents the compiled form contents
 	 */
 	SimpleObject compileFormSchema(Form form);
 	
+	/**
+	 * Loads all of the concepts
+	 * 
+	 * @param compiledForm
+	 * @return
+	 */
 	SimpleObject getConceptReferences(SimpleObject compiledForm);
 	
 	@Transactional(readOnly = true)
 	SimpleObject getConceptReferences(SimpleObject compiledForm, Representation conceptRepresentation);
 	
 	/**
-	 * Loads the translations associated with a particular form. These translations are defined in additional form resources
-	 * attached to the form. If referenced forms are included, then the appropriate translations for the referenced forms
-	 * (if any) will also be included.
+	 * Loads the translations associated with a particular form. These translations are defined in
+	 * additional form resources attached to the form. If referenced forms are included, then the
+	 * appropriate translations for the referenced forms (if any) will also be included.
 	 * <p/>
-	 * For each form, only a single translation file will be created, the first to match the appropriate locale as determined
-	 * by {@link org.openmrs.util.LocaleUtility#getLocalesInOrder()}. If multiple forms are referenced, the translations
-	 * will be merged into a single JSON object, with keys from the explicitly loaded form overwriting keys from referenced
-	 * forms.
+	 * For each form, only a single translation file will be created, the first to match the appropriate
+	 * locale as determined by {@link org.openmrs.util.LocaleUtility#getLocalesInOrder()}. If multiple
+	 * forms are referenced, the translations will be merged into a single JSON object, with keys from
+	 * the explicitly loaded form overwriting keys from referenced forms.
 	 *
 	 * @param formNameOrUuid The name or UUID of the form
 	 * @return A map of translation key-translation pairs for the form
@@ -110,14 +116,14 @@ public interface O3FormsService extends OpenmrsService {
 	Map<String, ?> getTranslations(String formNameOrUuid);
 	
 	/**
-	 * Loads the translations associated with a particular form. These translations are defined in additional form resources
-	 * attached to the form. If referenced forms are included, then the appropriate translations for the referenced forms
-	 * (if any) will also be included.
+	 * Loads the translations associated with a particular form. These translations are defined in
+	 * additional form resources attached to the form. If referenced forms are included, then the
+	 * appropriate translations for the referenced forms (if any) will also be included.
 	 * <p/>
-	 * For each form, only a single translation file will be created, the first to match the appropriate locale as determined
-	 * by {@link org.openmrs.util.LocaleUtility#getLocalesInOrder()}. If multiple forms are referenced, the translations
-	 * will be merged into a single JSON object, with keys from the explicitly loaded form overwriting keys from referenced
-	 * forms.
+	 * For each form, only a single translation file will be created, the first to match the appropriate
+	 * locale as determined by {@link org.openmrs.util.LocaleUtility#getLocalesInOrder()}. If multiple
+	 * forms are referenced, the translations will be merged into a single JSON object, with keys from
+	 * the explicitly loaded form overwriting keys from referenced forms.
 	 *
 	 * @param form The form
 	 * @return A map of translation key-translation pairs for the form

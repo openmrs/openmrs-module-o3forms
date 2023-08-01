@@ -1,19 +1,14 @@
-# O3
+# O3 Forms
 
 ## Description
 
-This module provides backend services for the O3 system. This mainly consists of REST APIs that don't have another home
-useful or necessary for parts of O3's operations.
-
-Currently, this module provides:
-
-* A REST API to get a "complete" O3 form schema
+This module provides REST APIs to provide backend services for O3-style forms
 
 ## Requirements
 
 This module requires OpenMRS 2.6.0 or higher and the webservices.rest module 2.40.0 or higher.
 
-## Features
+## REST APIS
 
 ### O3 Form Schema
 
