@@ -64,7 +64,7 @@ public class O3FormsResourceController extends BaseRestController {
 				Representation representation = new CustomRepresentation(DEFAULT_FORMAT);
 				// get the "v" param for the representations
 				String format = request.getParameter(RestConstants.REQUEST_PROPERTY_FOR_REPRESENTATION);
-				if (format != null && !format.isEmpty() && !DEFAULT_FORMAT.equals(format)) {
+				if (format != null && !format.isEmpty() && !RestConstants.REPRESENTATION_DEFAULT.equalsIgnoreCase(format)) {
 					representation = Context.getService(RestService.class).getRepresentation(format);
 				}
 				
