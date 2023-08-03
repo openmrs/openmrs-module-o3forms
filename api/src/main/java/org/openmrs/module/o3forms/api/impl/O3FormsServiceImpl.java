@@ -644,7 +644,7 @@ public class O3FormsServiceImpl extends BaseOpenmrsService implements O3FormsSer
 	 */
 	private static enum WalkState {
 		/**
-		 * Default state; process the next list
+		 * Default state; process the next item in the list
 		 */
 		CONTINUE,
 		/**
