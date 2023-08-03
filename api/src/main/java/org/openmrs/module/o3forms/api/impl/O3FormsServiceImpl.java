@@ -27,6 +27,7 @@ import static org.openmrs.module.o3forms.O3FormsConstants.SCHEMA_KEY_SECTION;
 import static org.openmrs.module.o3forms.O3FormsConstants.SCHEMA_KEY_SECTIONS;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -36,6 +37,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.SerializationUtils;
@@ -194,41 +197,31 @@ public class O3FormsServiceImpl extends BaseOpenmrsService implements O3FormsSer
 								}
 							} while (false);
 							
-							Object questionsObj = sectionMap.get(SCHEMA_KEY_QUESTIONS);
-							
+							Object questionsObj = ((Map<?, ?>) section).get(SCHEMA_KEY_QUESTIONS);
 							if (!(questionsObj instanceof List)) {
 								log.warn("Form compilation - question array contains a non-object entry: {}", questionsObj);
 								continue;
 							}
 							
-							List<?> questions = (List<?>) questionsObj;
-							for (Object question : questions) {
-								if (!(question instanceof Map)) {
-									log.info("Form compilation - questions array contains a non-object entry: {}", question);
-									continue;
-								}
-								
-								@SuppressWarnings("unchecked")
-								Map<String, Object> questionMap = (Map<String, Object>) question;
-								
+							walkQuestions((List<?>) questionsObj, questionMap -> {
 								if (questionMap.containsKey(SCHEMA_KEY_REFERENCE)) {
 									Map<?, ?> referenceMap = getReferenceObjectFromItem(questionMap).orElse(null);
 									questionMap.clear();
 									
 									if (referenceMap == null) {
-										continue;
+										return WalkState.CONTINUE;
 									}
 									
 									Object referenceQuestionIdObject = referenceMap.get(SCHEMA_KEY_QUESTION_ID);
 									if (!(referenceQuestionIdObject instanceof String)) {
-										continue;
+										return WalkState.CONTINUE;
 									}
 									
 									Map<String, Object> referencedForm = getReferencedFormForItem(referencedForms,
 									    referenceMap).orElse(null);
 									
 									if (referencedForm == null) {
-										continue;
+										return WalkState.CONTINUE;
 									}
 									
 									getQuestionById(referencedForm, (String) referenceQuestionIdObject).map(q -> {
@@ -236,27 +229,29 @@ public class O3FormsServiceImpl extends BaseOpenmrsService implements O3FormsSer
 										return q;
 									});
 								}
-							}
+								
+								return WalkState.CONTINUE;
+							});
 							
 							if (!sectionExcludedQuestions.isEmpty()) {
-								questions.removeIf(question -> {
-									if (!(question instanceof Map)) {
-										return false;
-									}
+								walkQuestions((List<?>) questionsObj, (ignored, questionList) -> {
+									questionList.removeIf(question -> {
+										Map<?, ?> questionMap = (Map<?, ?>) question;
+										
+										if (!questionMap.containsKey("id")) {
+											return false;
+										}
+										
+										Object questionIdObject = questionMap.get("id");
+										
+										if (!(questionIdObject instanceof String)) {
+											return false;
+										}
+										
+										return sectionExcludedQuestions.contains(questionIdObject);
+									});
 									
-									Map<?, ?> questionMap = (Map<?, ?>) question;
-									
-									if (!questionMap.containsKey("id")) {
-										return false;
-									}
-									
-									Object questionIdObject = questionMap.get("id");
-									
-									if (!(questionIdObject instanceof String)) {
-										return false;
-									}
-									
-									return sectionExcludedQuestions.contains(questionIdObject);
+									return WalkState.NEXT_LIST;
 								});
 							}
 						}
@@ -281,7 +276,7 @@ public class O3FormsServiceImpl extends BaseOpenmrsService implements O3FormsSer
 			return new SimpleObject(0);
 		}
 		
-		LinkedHashSet<String> conceptReferences = new LinkedHashSet<>();
+		final LinkedHashSet<String> conceptReferences = new LinkedHashSet<>();
 		// load all concepts
 		Object pagesObject = compiledForm.get(SCHEMA_KEY_PAGES);
 		if (pagesObject instanceof List) {
@@ -292,43 +287,40 @@ public class O3FormsServiceImpl extends BaseOpenmrsService implements O3FormsSer
 						for (Object section : (List<?>) sectionsObject) {
 							if (section instanceof Map) {
 								Object questionsObject = ((Map<?, ?>) section).get(SCHEMA_KEY_QUESTIONS);
-								if (questionsObject instanceof List) {
-									for (Object question : (List<?>) questionsObject) {
-										if (question instanceof Map) {
-											Map<?, ?> questionMap = (Map<?, ?>) question;
-											{
-												Object conceptObject = questionMap.get(SCHEMA_KEY_CONCEPT);
-												if (conceptObject instanceof String && !((String) conceptObject).isEmpty()) {
-													conceptReferences.add((String) conceptObject);
-												}
-											}
-											
-											Object questionOptionsObject = questionMap.get(SCHEMA_KEY_QUESTION_OPTIONS);
-											if (questionOptionsObject instanceof Map) {
-												Map<?, ?> questionOptions = (Map<?, ?>) questionOptionsObject;
-												
-												Object conceptObject = questionOptions.get(SCHEMA_KEY_CONCEPT);
-												if (conceptObject instanceof String && !((String) conceptObject).isEmpty()) {
-													conceptReferences.add((String) conceptObject);
-												}
-												
-												Object answersObject = questionOptions.get(SCHEMA_KEY_ANSWERS);
-												if (answersObject instanceof List) {
-													for (Object answer : (List<?>) answersObject) {
-														if (answer instanceof Map) {
-															Object answerConceptObject = ((Map<?, ?>) answer)
-															        .get(SCHEMA_KEY_CONCEPT);
-															if (answerConceptObject instanceof String
-															        && !((String) answerConceptObject).isEmpty()) {
-																conceptReferences.add((String) answerConceptObject);
-															}
-														}
+								walkQuestions((List<?>) questionsObject, questionMap -> {
+									{
+										Object conceptObject = questionMap.get(SCHEMA_KEY_CONCEPT);
+										if (conceptObject instanceof String && !((String) conceptObject).isEmpty()) {
+											conceptReferences.add((String) conceptObject);
+										}
+									}
+									
+									Object questionOptionsObject = questionMap.get(SCHEMA_KEY_QUESTION_OPTIONS);
+									if (questionOptionsObject instanceof Map) {
+										Map<?, ?> questionOptions = (Map<?, ?>) questionOptionsObject;
+										
+										Object conceptObject = questionOptions.get(SCHEMA_KEY_CONCEPT);
+										if (conceptObject instanceof String && !((String) conceptObject).isEmpty()) {
+											conceptReferences.add((String) conceptObject);
+										}
+										
+										Object answersObject = questionOptions.get(SCHEMA_KEY_ANSWERS);
+										if (answersObject instanceof List) {
+											for (Object answer : (List<?>) answersObject) {
+												if (answer instanceof Map) {
+													Object answerConceptObject = ((Map<?, ?>) answer)
+													        .get(SCHEMA_KEY_CONCEPT);
+													if (answerConceptObject instanceof String
+													        && !((String) answerConceptObject).isEmpty()) {
+														conceptReferences.add((String) answerConceptObject);
 													}
 												}
 											}
 										}
 									}
-								}
+									
+									return null;
+								});
 							}
 						}
 					}
@@ -355,7 +347,9 @@ public class O3FormsServiceImpl extends BaseOpenmrsService implements O3FormsSer
 			return result;
 		}
 		
-		return new SimpleObject(0);
+		return new
+		
+		SimpleObject(0);
 	}
 	
 	@Transactional(readOnly = true)
@@ -645,6 +639,79 @@ public class O3FormsServiceImpl extends BaseOpenmrsService implements O3FormsSer
 		});
 	}
 	
+	/**
+	 * States for the various {@link #walkQuestions(List, Function)} implementations
+	 */
+	private static enum WalkState {
+		/**
+		 * Default state; process the next list
+		 */
+		CONTINUE,
+		/**
+		 * Used to indicate no further processing is needed, so the loop is exited
+		 */
+		BREAK,
+		/**
+		 * Used to indicate that no further processing of individual questions are needed, but if a question
+		 * contains other questions, those questions will be processed.
+		 */
+		NEXT_LIST;
+	}
+	
+	/**
+	 * Helper to recursively traverse a list of questions, since questions can contain other questions.
+	 * By default, the supplied handler will be called with each question as it is encountered. Use the
+	 * {@link WalkState} values to control how questions are handed to the handler.
+	 *
+	 * @param questions A list of objects that are potentially O3 form question objects
+	 * @param handler A callback that is called with a map representing the question
+	 */
+	private static void walkQuestions(List<?> questions, Function<Map<String, Object>, WalkState> handler) {
+		walkQuestions(questions, (questionMap, ignored) -> handler.apply(questionMap));
+	}
+	
+	/**
+	 * Helper to recursively traverse a list of questions, since questions can contain other questions.
+	 * By default, the supplied handler will be called with each question as it is encountered. Use the
+	 * {@link WalkState} values to control how questions are handed to the handler.
+	 *
+	 * @param questions A list of objects that are potentially O3 form question objects
+	 * @param handler A callback that is called with a map representing the question and the list the
+	 *            question appeared in
+	 */
+	private static void walkQuestions(List<?> questions, BiFunction<Map<String, Object>, List<?>, WalkState> handler) {
+		WalkState currentState = WalkState.CONTINUE;
+		
+		// wrap list in a new list to avoid ConcurrentModificationExceptions
+		for (Object question : new ArrayList<>(questions)) {
+			if (!(question instanceof Map)) {
+				log.info("Form compilation - questions array contains a non-object entry: {}", question);
+				continue;
+			}
+			
+			@SuppressWarnings("unchecked")
+			Map<String, Object> questionMap = (Map<String, Object>) question;
+			
+			if (currentState == WalkState.CONTINUE) {
+				WalkState nextState = handler.apply(questionMap, questions);
+				if (nextState == WalkState.BREAK) {
+					return;
+				} else if (nextState != null) {
+					currentState = nextState;
+				}
+			}
+			
+			if (questionMap.containsKey(SCHEMA_KEY_QUESTIONS)) {
+				Object questionsObj = questionMap.get(SCHEMA_KEY_QUESTIONS);
+				if (!(questionsObj instanceof List)) {
+					continue;
+				}
+				
+				walkQuestions((List<?>) questionsObj, handler);
+			}
+		}
+	}
+	
 	private static Optional<Map<String, Object>> getQuestionById(Map<String, Object> formSchema, String questionId) {
 		if (!formSchema.containsKey(SCHEMA_KEY_PAGES)) {
 			log.error("Form compilation - referenced form {} does not define any pages", formSchema.get("name"));
@@ -681,23 +748,27 @@ public class O3FormsServiceImpl extends BaseOpenmrsService implements O3FormsSer
 						continue;
 					}
 					
-					for (Object question : (List<?>) questionsObject) {
-						if (!(question instanceof Map)) {
-							continue;
-						}
-						
-						@SuppressWarnings("unchecked")
-						Map<String, Object> questionMap = (Map<String, Object>) question;
-						
+					final Map<String, Object> result = new LinkedHashMap<>();
+					walkQuestions((List<?>) questionsObject, questionMap -> {
 						Object questionIdObject = questionMap.get("id");
 						
 						if (!(questionIdObject instanceof String)) {
-							continue;
+							return WalkState.CONTINUE;
 						}
 						
 						if (OpenmrsUtil.nullSafeEquals(questionId, (String) questionIdObject)) {
-							return Optional.of(questionMap);
+							result.putAll(questionMap);
+							return WalkState.BREAK;
 						}
+						
+						return null;
+					});
+					
+					// result is never null
+					if (!result.isEmpty()) {
+						return Optional.of(result);
+					} else {
+						return Optional.empty();
 					}
 				}
 			}

@@ -346,6 +346,64 @@ public class O3FormsServiceTest extends BaseModuleWebContextSensitiveTest {
 	}
 	
 	@Test
+	void compile_shouldCombineReferencedQuestionsFromObsGroups() throws Exception {
+		// arrange
+		DatatypeService datatypeService = Context.getDatatypeService();
+		FormService formService = Context.getFormService();
+		
+		{
+			String jsonForm = IOUtils.resourceToString("/forms/test-schemas/obsgroup-reference/root-form.json",
+			    StandardCharsets.UTF_8);
+			ClobDatatypeStorage datatypeStorage = new ClobDatatypeStorage();
+			datatypeStorage.setValue(jsonForm);
+			datatypeStorage.setUuid(QUESTION_REF_ROOT_FORM_CLOB_UUID);
+			datatypeService.saveClobDatatypeStorage(datatypeStorage);
+			
+			Form form = new Form();
+			form.setName("root_form");
+			form.setVersion("1.0");
+			formService.saveForm(form);
+			
+			FormResource formSchema = new FormResource();
+			formSchema.setName("JSON schema");
+			formSchema.setForm(form);
+			formSchema.setValueReferenceInternal(QUESTION_REF_ROOT_FORM_CLOB_UUID);
+			formService.saveFormResource(formSchema);
+		}
+		
+		{
+			String jsonForm = IOUtils.resourceToString("/forms/test-schemas/obsgroup-reference/referenced-form.json",
+			    StandardCharsets.UTF_8);
+			ClobDatatypeStorage datatypeStorage = new ClobDatatypeStorage();
+			datatypeStorage.setValue(jsonForm);
+			datatypeStorage.setUuid(QUESTION_REF_REFERENCED_FORM_CLOB_UUID);
+			datatypeService.saveClobDatatypeStorage(datatypeStorage);
+			
+			Form form = new Form();
+			form.setName("referenced_form");
+			form.setVersion("1.0");
+			formService.saveForm(form);
+			
+			FormResource formSchema = new FormResource();
+			formSchema.setName("JSON schema");
+			formSchema.setForm(form);
+			formSchema.setValueReferenceInternal(QUESTION_REF_REFERENCED_FORM_CLOB_UUID);
+			formService.saveFormResource(formSchema);
+		}
+		
+		// act
+		SimpleObject result = o3FormsService.compileFormSchema("root_form");
+		
+		// assert
+		assertThat(result, notNullValue());
+		
+		String referenceCompiledVersion = IOUtils
+		        .resourceToString("/forms/test-schemas/obsgroup-reference/root-form-compiled.json", StandardCharsets.UTF_8);
+		ObjectMapper objectMapper = new ObjectMapper();
+		assertThat(objectMapper.valueToTree(result), equalTo(objectMapper.readTree(referenceCompiledVersion)));
+	}
+	
+	@Test
 	void compile_shouldExcludeQuestionsDefinedInPageReference() throws Exception {
 		// arrange
 		DatatypeService datatypeService = Context.getDatatypeService();
@@ -505,6 +563,12 @@ public class O3FormsServiceTest extends BaseModuleWebContextSensitiveTest {
 		assertThat(result, hasKey("934d8ef1-ea43-4f98-906e-dd03d5faaeb4"));
 		assertThat((Map<String, String>) result.get("934d8ef1-ea43-4f98-906e-dd03d5faaeb4"),
 		    allOf(hasEntry("uuid", "934d8ef1-ea43-4f98-906e-dd03d5faaeb4"), hasEntry("display", "NO")));
+		assertThat(result, hasKey("6e02d1a0-7869-11e4-981f-0800200c9a89"));
+		assertThat((Map<String, String>) result.get("6e02d1a0-7869-11e4-981f-0800200c9a89"),
+		    allOf(hasEntry("uuid", "6e02d1a0-7869-11e4-981f-0800200c9a89"), hasEntry("display", "Drug Routes")));
+		assertThat(result, hasKey("e10ffe54-5184-4efe-8960-cd565ec1cdf8"));
+		assertThat((Map<String, String>) result.get("e10ffe54-5184-4efe-8960-cd565ec1cdf8"),
+		    allOf(hasEntry("uuid", "e10ffe54-5184-4efe-8960-cd565ec1cdf8"), hasEntry("display", "UNKNOWN")));
 	}
 	
 	@Test

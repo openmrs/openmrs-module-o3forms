@@ -10,12 +10,20 @@
           "label": "Root Section",
           "questions": [
             {
-              "id": "referencedQuestion",
-              "type": "obs",
+              "id": "rootQuestion",
+              "type": "obsGroup",
               "questionOptions": {
                 "concept": "e8132ea3-7fec-46fa-9486-05611acc861c",
-                "rendering": "text"
-              }
+                "rendering": "group"
+              },
+              "questions": [
+                {
+                  "reference": {
+                    "form": "ref",
+                    "questionId": "referencedQuestion"
+                  }
+                }
+              ]
             }
           ]
         }

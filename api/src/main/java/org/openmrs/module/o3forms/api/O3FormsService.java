@@ -15,11 +15,9 @@ import org.openmrs.Form;
 import org.openmrs.api.OpenmrsService;
 import org.openmrs.module.webservices.rest.SimpleObject;
 import org.openmrs.module.webservices.rest.web.representation.Representation;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
- * The main service of this module, which is exposed for other modules. See
- * moduleApplicationContext.xml on how it is wired up.
+ * This is the service for working with and handling O3 forms.
  */
 public interface O3FormsService extends OpenmrsService {
 	
@@ -90,14 +88,28 @@ public interface O3FormsService extends OpenmrsService {
 	SimpleObject compileFormSchema(Form form);
 	
 	/**
-	 * Loads all of the concepts
+	 * Loads data about the concepts used for questions and answers inside the form.
 	 * 
-	 * @param compiledForm
-	 * @return
+	 * @param compiledForm A {@link SimpleObject} that represents the compiled form, such as returned by
+	 *            {@link #compileFormSchema(Form)}
+	 * @return A simple object of key-value pairs where the keys are the concepts as referred to in the
+	 *         form and the values are values extracted from those concepts, using the default
+	 *         representation defined in
+	 *         {@link org.openmrs.module.o3forms.O3FormsConstants#DEFAULT_FORMAT}.
 	 */
 	SimpleObject getConceptReferences(SimpleObject compiledForm);
 	
-	@Transactional(readOnly = true)
+	/**
+	 * Loads data about the concepts used for questions and answers inside the form.
+	 *
+	 * @param compiledForm A {@link SimpleObject} that represents the compiled form, such as returned by
+	 *            {@link #compileFormSchema(Form)}
+	 * @param conceptRepresentation A {@link Representation} that determines what properties of the
+	 *            concept are returned as the values inside the {@link SimpleObject}
+	 * @return A simple object of key-value pairs where the keys are the concepts as referred to in the
+	 *         form and the values are values extracted from those concepts, using the requested
+	 *         representation.
+	 */
 	SimpleObject getConceptReferences(SimpleObject compiledForm, Representation conceptRepresentation);
 	
 	/**

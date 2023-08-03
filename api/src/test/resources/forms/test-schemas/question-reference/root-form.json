@@ -7,7 +7,7 @@
       "label": "Root Page",
       "sections": [
         {
-          "label": "Referenced Section",
+          "label": "Root Section",
           "questions": [
             {
               "reference": {

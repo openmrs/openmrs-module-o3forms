@@ -28,6 +28,24 @@
                 ],
                 "rendering": "select"
               }
+            },
+            {
+              "id": "Question Obs Group",
+              "type": "obsGroup",
+              "questionOptions": {
+                "concept": "6e02d1a0-7869-11e4-981f-0800200c9a89",
+                "rendering": "group"
+              },
+              "questions": [
+                {
+                  "id": "Question 2",
+                  "type": "obs",
+                  "questionOptions": {
+                    "concept": "e10ffe54-5184-4efe-8960-cd565ec1cdf8",
+                    "rendering": "text"
+                  }
+                }
+              ]
             }
           ]
         }
