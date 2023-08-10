@@ -42,6 +42,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.SerializationUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.openmrs.Concept;
 import org.openmrs.Form;
 import org.openmrs.FormResource;
@@ -335,7 +336,26 @@ public class O3FormsServiceImpl extends BaseOpenmrsService implements O3FormsSer
 			SimpleObject result = new SimpleObject();
 			for (String conceptReference : conceptReferences) {
 				try {
-					Concept concept = conceptService.getConceptByReference(conceptReference);
+					if (StringUtils.isBlank(conceptReference)) {
+						continue;
+					}
+					
+					Concept concept = null;
+					// handle UUIDs
+					if (isValidUuid(conceptReference)) {
+						concept = conceptService.getConceptByUuid(conceptReference);
+					}
+					
+					if (concept == null) {
+						// handle mappings
+						int idx = conceptReference.indexOf(':');
+						if (idx >= 0 && idx < conceptReference.length() - 1) {
+							String conceptSource = conceptReference.substring(0, idx);
+							String conceptCode = conceptReference.substring(idx + 1);
+							concept = conceptService.getConceptByMapping(conceptCode, conceptSource, false);
+						}
+					}
+					
 					if (concept != null) {
 						result.put(conceptReference, ConversionUtil.convertToRepresentation(concept, conceptRepresentation));
 					}
@@ -362,6 +382,11 @@ public class O3FormsServiceImpl extends BaseOpenmrsService implements O3FormsSer
 	@Override
 	public Map<String, ?> getTranslations(Form form) {
 		return getTranslationsInternal(getFormResources(form));
+	}
+	
+	private static boolean isValidUuid(String uuid) {
+		return uuid != null
+		        && (uuid.length() == 36 || uuid.length() == 38 || uuid.indexOf(' ') < 0 || uuid.indexOf('.') < 0);
 	}
 	
 	private Map<String, ?> getTranslationsInternal(List<FormResource> formResources) {

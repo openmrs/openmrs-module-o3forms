@@ -21,7 +21,7 @@ import java.util.Map;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.IOUtils;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 import org.openmrs.Form;
 import org.openmrs.FormResource;
 import org.openmrs.api.DatatypeService;
@@ -29,7 +29,7 @@ import org.openmrs.api.FormService;
 import org.openmrs.api.context.Context;
 import org.openmrs.api.db.ClobDatatypeStorage;
 import org.openmrs.module.webservices.rest.SimpleObject;
-import org.openmrs.web.test.jupiter.BaseModuleWebContextSensitiveTest;
+import org.openmrs.web.test.BaseModuleWebContextSensitiveTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
@@ -74,7 +74,7 @@ public class O3FormsServiceTest extends BaseModuleWebContextSensitiveTest {
 	O3FormsService o3FormsService;
 	
 	@Test
-	void compile_shouldCombineComponents() throws Exception {
+	public void compile_shouldCombineComponents() throws Exception {
 		// arrange
 		DatatypeService datatypeService = Context.getDatatypeService();
 		FormService formService = Context.getFormService();
@@ -172,7 +172,7 @@ public class O3FormsServiceTest extends BaseModuleWebContextSensitiveTest {
 	}
 	
 	@Test
-	void compile_shouldCombineReferencedPages() throws Exception {
+	public void compile_shouldCombineReferencedPages() throws Exception {
 		// arrange
 		DatatypeService datatypeService = Context.getDatatypeService();
 		FormService formService = Context.getFormService();
@@ -230,7 +230,7 @@ public class O3FormsServiceTest extends BaseModuleWebContextSensitiveTest {
 	}
 	
 	@Test
-	void compile_shouldCombineReferencedSections() throws Exception {
+	public void compile_shouldCombineReferencedSections() throws Exception {
 		// arrange
 		DatatypeService datatypeService = Context.getDatatypeService();
 		FormService formService = Context.getFormService();
@@ -288,7 +288,7 @@ public class O3FormsServiceTest extends BaseModuleWebContextSensitiveTest {
 	}
 	
 	@Test
-	void compile_shouldCombineReferencedQuestions() throws Exception {
+	public void compile_shouldCombineReferencedQuestions() throws Exception {
 		// arrange
 		DatatypeService datatypeService = Context.getDatatypeService();
 		FormService formService = Context.getFormService();
@@ -346,7 +346,7 @@ public class O3FormsServiceTest extends BaseModuleWebContextSensitiveTest {
 	}
 	
 	@Test
-	void compile_shouldCombineReferencedQuestionsFromObsGroups() throws Exception {
+	public void compile_shouldCombineReferencedQuestionsFromObsGroups() throws Exception {
 		// arrange
 		DatatypeService datatypeService = Context.getDatatypeService();
 		FormService formService = Context.getFormService();
@@ -404,7 +404,7 @@ public class O3FormsServiceTest extends BaseModuleWebContextSensitiveTest {
 	}
 	
 	@Test
-	void compile_shouldExcludeQuestionsDefinedInPageReference() throws Exception {
+	public void compile_shouldExcludeQuestionsDefinedInPageReference() throws Exception {
 		// arrange
 		DatatypeService datatypeService = Context.getDatatypeService();
 		FormService formService = Context.getFormService();
@@ -462,7 +462,7 @@ public class O3FormsServiceTest extends BaseModuleWebContextSensitiveTest {
 	}
 	
 	@Test
-	void compile_shouldExcludeQuestionsDefinedInSectionReference() throws Exception {
+	public void compile_shouldExcludeQuestionsDefinedInSectionReference() throws Exception {
 		// arrange
 		DatatypeService datatypeService = Context.getDatatypeService();
 		FormService formService = Context.getFormService();
@@ -520,7 +520,8 @@ public class O3FormsServiceTest extends BaseModuleWebContextSensitiveTest {
 	}
 	
 	@Test
-	void getConceptReferences_shouldLoadConceptReferencesForCompiledForm() throws Exception {
+	@SuppressWarnings("unchecked")
+	public void getConceptReferences_shouldLoadConceptReferencesForCompiledForm() throws Exception {
 		// arrange
 		DatatypeService datatypeService = Context.getDatatypeService();
 		FormService formService = Context.getFormService();
@@ -572,7 +573,7 @@ public class O3FormsServiceTest extends BaseModuleWebContextSensitiveTest {
 	}
 	
 	@Test
-	void getTranslations_shouldLoadTranslationsForForm() throws Exception {
+	public void getTranslations_shouldLoadTranslationsForForm() throws Exception {
 		// arrange
 		DatatypeService datatypeService = Context.getDatatypeService();
 		FormService formService = Context.getFormService();
@@ -620,7 +621,7 @@ public class O3FormsServiceTest extends BaseModuleWebContextSensitiveTest {
 	}
 	
 	@Test
-	void getTranslations_shouldLoadTranslationsFromReferencedForm() throws Exception {
+	public void getTranslations_shouldLoadTranslationsFromReferencedForm() throws Exception {
 		// arrange
 		DatatypeService datatypeService = Context.getDatatypeService();
 		FormService formService = Context.getFormService();

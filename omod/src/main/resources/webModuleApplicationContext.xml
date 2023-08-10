@@ -12,4 +12,27 @@
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="http://www.springframework.org/schema/beans
   		    http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+
+    <!-- Wraps O3FormsService methods in DB transactions and OpenMRS interceptors,
+which set audit info like dateCreated, changedBy, etc.-->
+    <bean id="o3forms.O3FormsService"
+          class="org.springframework.transaction.interceptor.TransactionProxyFactoryBean">
+        <property name="transactionManager" ref="transactionManager"/>
+        <property name="target">
+            <bean class="org.openmrs.module.o3forms.api.impl.O3FormsServiceImpl"/>
+        </property>
+        <property name="preInterceptors" ref="serviceInterceptors"/>
+        <property name="transactionAttributeSource" ref="transactionAttributeSource"/>
+    </bean>
+
+    <!-- Adds O3FormsService to OpenMRS context so it can be accessed
+    calling Context.getService(O3FormsService.class) -->
+    <bean parent="serviceContext">
+        <property name="moduleService">
+            <list>
+                <value>org.openmrs.module.o3forms.api.O3FormsService</value>
+                <ref bean="o3forms.O3FormsService"/>
+            </list>
+        </property>
+    </bean>
 </beans>

@@ -11,6 +11,7 @@ package org.openmrs.module.o3forms.web.rest;
 
 import static org.openmrs.module.o3forms.O3FormsConstants.DEFAULT_FORMAT;
 import static org.openmrs.module.o3forms.O3FormsWebConstants.REST_NAMESPACE;
+import static org.springframework.web.bind.annotation.RequestMethod.GET;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -27,7 +28,6 @@ import org.openmrs.module.webservices.rest.web.representation.Representation;
 import org.openmrs.module.webservices.rest.web.response.ObjectNotFoundException;
 import org.openmrs.module.webservices.rest.web.v1_0.controller.BaseRestController;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -41,7 +41,7 @@ public class O3FormsResourceController extends BaseRestController {
 		System.err.println("O3FormsResourceController loaded");
 	}
 	
-	@GetMapping
+	@RequestMapping(method = GET)
 	@ResponseBody
 	public SimpleObject getO3Form(@PathVariable("formNameOrUuid") String formNameOrUuid,
 	        @RequestParam(defaultValue = "true") String includeConceptReferences, HttpServletRequest request,
