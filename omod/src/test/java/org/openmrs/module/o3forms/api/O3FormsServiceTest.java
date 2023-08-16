@@ -25,6 +25,7 @@ import org.junit.Test;
 import org.openmrs.Form;
 import org.openmrs.FormResource;
 import org.openmrs.api.DatatypeService;
+import org.openmrs.api.EncounterService;
 import org.openmrs.api.FormService;
 import org.openmrs.api.context.Context;
 import org.openmrs.api.db.ClobDatatypeStorage;
@@ -34,6 +35,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
 public class O3FormsServiceTest extends BaseModuleWebContextSensitiveTest {
+	
+	private static final String FORM_UUID = "6b4d2c09-cc51-458d-8e7d-fa3538280dbe";
 	
 	private static final String ADULT_RETURN_CLOB_UUID = "83e6cd2a-8b2e-402e-a00c-7d80a66ccf38";
 	
@@ -90,6 +93,7 @@ public class O3FormsServiceTest extends BaseModuleWebContextSensitiveTest {
 			Form form = new Form();
 			form.setName("ampath_poc_adult_return_visit_form_v1.0");
 			form.setVersion("1.0");
+			form.setUuid(FORM_UUID);
 			formService.saveForm(form);
 			
 			FormResource formSchema = new FormResource();
@@ -188,6 +192,7 @@ public class O3FormsServiceTest extends BaseModuleWebContextSensitiveTest {
 			Form form = new Form();
 			form.setName("root_form");
 			form.setVersion("1.0");
+			form.setUuid(FORM_UUID);
 			formService.saveForm(form);
 			
 			FormResource formSchema = new FormResource();
@@ -246,6 +251,7 @@ public class O3FormsServiceTest extends BaseModuleWebContextSensitiveTest {
 			Form form = new Form();
 			form.setName("root_form");
 			form.setVersion("1.0");
+			form.setUuid(FORM_UUID);
 			formService.saveForm(form);
 			
 			FormResource formSchema = new FormResource();
@@ -304,6 +310,7 @@ public class O3FormsServiceTest extends BaseModuleWebContextSensitiveTest {
 			Form form = new Form();
 			form.setName("root_form");
 			form.setVersion("1.0");
+			form.setUuid(FORM_UUID);
 			formService.saveForm(form);
 			
 			FormResource formSchema = new FormResource();
@@ -362,6 +369,7 @@ public class O3FormsServiceTest extends BaseModuleWebContextSensitiveTest {
 			Form form = new Form();
 			form.setName("root_form");
 			form.setVersion("1.0");
+			form.setUuid(FORM_UUID);
 			formService.saveForm(form);
 			
 			FormResource formSchema = new FormResource();
@@ -420,6 +428,7 @@ public class O3FormsServiceTest extends BaseModuleWebContextSensitiveTest {
 			Form form = new Form();
 			form.setName("root_form");
 			form.setVersion("1.0");
+			form.setUuid(FORM_UUID);
 			formService.saveForm(form);
 			
 			FormResource formSchema = new FormResource();
@@ -478,6 +487,7 @@ public class O3FormsServiceTest extends BaseModuleWebContextSensitiveTest {
 			Form form = new Form();
 			form.setName("root_form");
 			form.setVersion("1.0");
+			form.setUuid(FORM_UUID);
 			formService.saveForm(form);
 			
 			FormResource formSchema = new FormResource();
@@ -517,6 +527,40 @@ public class O3FormsServiceTest extends BaseModuleWebContextSensitiveTest {
 		        .resourceToString("/forms/test-schemas/exclusions/root-form-section-compiled.json", StandardCharsets.UTF_8);
 		ObjectMapper objectMapper = new ObjectMapper();
 		assertThat(objectMapper.valueToTree(result), equalTo(objectMapper.readTree(referenceCompiledVersion)));
+	}
+	
+	@Test
+	public void compile_shouldAddTheEncounterTypeDataIfFormHasAssociatedEncounterType() throws Exception {
+		// arrange
+		DatatypeService datatypeService = Context.getDatatypeService();
+		FormService formService = Context.getFormService();
+		EncounterService encounterService = Context.getEncounterService();
+		
+		{
+			String jsonForm = IOUtils.resourceToString("/forms/test-schemas/encountertype/root-form.json",
+			    StandardCharsets.UTF_8);
+			ClobDatatypeStorage datatypeStorage = new ClobDatatypeStorage();
+			datatypeStorage.setValue(jsonForm);
+			datatypeStorage.setUuid(ROOT_FORM_CLOB_UUID);
+			datatypeService.saveClobDatatypeStorage(datatypeStorage);
+			
+			Form form = new Form();
+			form.setName("root_form");
+			form.setVersion("1.0");
+			form.setUuid(FORM_UUID);
+			form.setEncounterType(encounterService.getEncounterTypeByUuid("61ae96f4-6afe-4351-b6f8-cd4fc383cce1"));
+			formService.saveForm(form);
+			
+			FormResource formSchema = new FormResource();
+			formSchema.setName("JSON schema");
+			formSchema.setForm(form);
+			formSchema.setValueReferenceInternal(ROOT_FORM_CLOB_UUID);
+			formService.saveFormResource(formSchema);
+		}
+		
+		// act
+		
+		// assert
 	}
 	
 	@Test

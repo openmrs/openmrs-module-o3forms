@@ -1,22 +1,16 @@
 {
   "name": "root_form",
-  "uuid": "6b4d2c09-cc51-458d-8e7d-fa3538280dbe",
+  "uuid": "xxxx",
   "processor": "EncounterFormProcessor",
   "pages": [
     {
       "label": "Root Page",
       "sections": [
         {
-          "label": "Referenced Section",
+          "label": "Root Section",
           "questions": []
         }
       ]
-    }
-  ],
-  "referencedForms": [
-    {
-      "formName": "referenced_form",
-      "alias": "ref"
     }
   ]
 }

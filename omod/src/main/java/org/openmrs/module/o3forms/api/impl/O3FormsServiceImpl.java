@@ -54,6 +54,7 @@ import org.openmrs.api.context.Context;
 import org.openmrs.api.db.ClobDatatypeStorage;
 import org.openmrs.api.impl.BaseOpenmrsService;
 import org.openmrs.module.o3forms.api.O3FormsService;
+import org.openmrs.module.o3forms.api.exceptions.FormNotFoundException;
 import org.openmrs.module.o3forms.api.exceptions.FormResourcesNotFoundException;
 import org.openmrs.module.o3forms.api.exceptions.FormSchemaNotFoundException;
 import org.openmrs.module.o3forms.api.exceptions.FormSchemaReadException;
@@ -74,21 +75,31 @@ public class O3FormsServiceImpl extends BaseOpenmrsService implements O3FormsSer
 	@Transactional(readOnly = true)
 	@Override
 	public SimpleObject compileFormSchema(String formNameOrUuid) {
-		return compileFormSchemaInternal(getFormSchema(formNameOrUuid));
+		return compileFormSchemaInternal(getForm(formNameOrUuid));
 	}
 	
 	@Transactional(readOnly = true)
 	@Override
 	public SimpleObject compileFormSchema(Form form) {
-		return compileFormSchemaInternal(getFormSchema(form));
+		return compileFormSchemaInternal(form);
 	}
 	
-	private SimpleObject compileFormSchemaInternal(SimpleObject formSchema) {
+	private SimpleObject compileFormSchemaInternal(Form form) {
 		// Compilation plan:
 		// 1. Collect referenced forms from main form
 		// 2. Load referenced forms
 		// 3. Walk the tree of pages, sections, and questions, replacing each reference element with the page, section or
 		//    question it references.
+		SimpleObject formSchema = getFormSchema(form);
+		
+		formSchema.put("uuid", form.getUuid());
+		
+		if (form.getEncounterType() != null) {
+			Object encounterTypeObject = ConversionUtil.convertToRepresentation(form.getEncounterType(),
+			    new CustomRepresentation(DEFAULT_FORMAT));
+			formSchema.put("encounterType", encounterTypeObject);
+		}
+		
 		Map<String, Map<String, Object>> referencedForms = getReferencedForms(formSchema).orElse(null);
 		
 		if (referencedForms != null) {
@@ -470,9 +481,9 @@ public class O3FormsServiceImpl extends BaseOpenmrsService implements O3FormsSer
 		return Optional.empty();
 	}
 	
-	private List<FormResource> getFormResources(String formNameOrUuid) {
+	private Form getForm(String formNameOrUuid) {
 		if (formNameOrUuid == null || formNameOrUuid.isEmpty()) {
-			throw new APIException("getFormResources() must be called with a form name");
+			throw new FormNotFoundException("getForm() must be called with a form name");
 		}
 		
 		FormService formService = Context.getFormService();
@@ -495,11 +506,11 @@ public class O3FormsServiceImpl extends BaseOpenmrsService implements O3FormsSer
 			}
 		}
 		
-		if (form == null) {
-			throw new FormSchemaNotFoundException();
-		}
-		
-		return getFormResources(form);
+		return form;
+	}
+	
+	private List<FormResource> getFormResources(String formNameOrUuid) {
+		return getFormResources(getForm(formNameOrUuid));
 	}
 	
 	private List<FormResource> getFormResources(Form form) {
@@ -519,7 +530,7 @@ public class O3FormsServiceImpl extends BaseOpenmrsService implements O3FormsSer
 	}
 	
 	private SimpleObject getFormSchema(String formNameOrUuid) {
-		return getFormSchemaFromResources(getFormResources(formNameOrUuid));
+		return getFormSchemaFromResources(getFormResources(getForm(formNameOrUuid)));
 	}
 	
 	private SimpleObject getFormSchema(Form form) {
@@ -583,7 +594,8 @@ public class O3FormsServiceImpl extends BaseOpenmrsService implements O3FormsSer
 				try {
 					result.put((String) aliasObject, getFormSchema((String) referencedFormName));
 				}
-				catch (FormSchemaNotFoundException | FormSchemaReadException e) {
+				catch (FormNotFoundException | FormResourcesNotFoundException | FormSchemaNotFoundException
+				        | FormSchemaReadException e) {
 					log.warn("Form compilation - Could not load schema for form {}", referencedFormName, e);
 				}
 			}
