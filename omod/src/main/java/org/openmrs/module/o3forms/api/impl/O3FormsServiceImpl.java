@@ -506,6 +506,10 @@ public class O3FormsServiceImpl extends BaseOpenmrsService implements O3FormsSer
 			}
 		}
 		
+		if (form == null) {
+			throw new FormNotFoundException();
+		}
+		
 		return form;
 	}
 	

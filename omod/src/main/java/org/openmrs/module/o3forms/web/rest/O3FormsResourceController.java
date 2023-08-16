@@ -18,6 +18,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.openmrs.api.context.Context;
 import org.openmrs.module.o3forms.api.O3FormsService;
+import org.openmrs.module.o3forms.api.exceptions.FormNotFoundException;
 import org.openmrs.module.o3forms.api.exceptions.FormResourcesNotFoundException;
 import org.openmrs.module.o3forms.api.exceptions.FormSchemaNotFoundException;
 import org.openmrs.module.webservices.rest.SimpleObject;
@@ -55,7 +56,7 @@ public class O3FormsResourceController extends BaseRestController {
 			try {
 				formSchema = o3FormsService.compileFormSchema(formNameOrUuid);
 			}
-			catch (FormSchemaNotFoundException e) {
+			catch (FormNotFoundException | FormSchemaNotFoundException e) {
 				throw new ObjectNotFoundException("Form " + formNameOrUuid + " does not exist");
 			}
 			catch (FormResourcesNotFoundException e) {

@@ -559,8 +559,15 @@ public class O3FormsServiceTest extends BaseModuleWebContextSensitiveTest {
 		}
 		
 		// act
+		SimpleObject result = o3FormsService.compileFormSchema("root_form");
 		
 		// assert
+		assertThat(result, notNullValue());
+		
+		String referenceCompiledVersion = IOUtils
+				.resourceToString("/forms/test-schemas/encountertype/root-form-compiled.json", StandardCharsets.UTF_8);
+		ObjectMapper objectMapper = new ObjectMapper();
+		assertThat(objectMapper.valueToTree(result), equalTo(objectMapper.readTree(referenceCompiledVersion)));
 	}
 	
 	@Test
