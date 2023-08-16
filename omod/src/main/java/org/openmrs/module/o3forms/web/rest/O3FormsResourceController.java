@@ -38,10 +38,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 @RequestMapping("/rest/" + RestConstants.VERSION_1 + REST_NAMESPACE + "/forms/{formNameOrUuid}")
 public class O3FormsResourceController extends BaseRestController {
 	
-	static {
-		System.err.println("O3FormsResourceController loaded");
-	}
-	
 	@RequestMapping(method = GET)
 	@ResponseBody
 	public SimpleObject getO3Form(@PathVariable("formNameOrUuid") String formNameOrUuid,
