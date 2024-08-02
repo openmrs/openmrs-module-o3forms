@@ -29,6 +29,7 @@ import static org.openmrs.module.o3forms.O3FormsConstants.SCHEMA_KEY_SECTIONS;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -496,11 +497,43 @@ public class O3FormsServiceImpl extends BaseOpenmrsService implements O3FormsSer
 				if (forms.size() == 1) {
 					form = forms.get(0);
 				} else {
+					List<Form> candidateForms = new ArrayList<>();
 					for (Form possibleForm : forms) {
 						if (formNameOrUuid.equalsIgnoreCase(possibleForm.getName())) {
-							form = possibleForm;
-							break;
+							if (!possibleForm.getRetired() && possibleForm.getPublished()) {
+								form = possibleForm;
+								break;
+							} else {
+								candidateForms.add(possibleForm);
+							}
 						}
+					}
+
+					if (form == null) {
+						for (Form candidateForm : candidateForms) {
+							if (candidateForm.getPublished()) {
+								form = candidateForm;
+								break;
+							}
+						}
+					}
+
+					if (form == null && !candidateForms.isEmpty()) {
+						candidateForms.sort((form1, form2) -> {
+							Date form1Date = form1.getDateCreated();
+							if (form1.getDateChanged() == null) {
+								form1Date = form1.getDateChanged();
+							}
+
+							Date form2Date = form2.getDateCreated();
+							if (form2.getDateChanged() == null) {
+								form2Date = form1.getDateChanged();
+							}
+
+							return -1 * form1Date.compareTo(form2Date);
+						});
+
+						form = candidateForms.get(0);
 					}
 				}
 			}
