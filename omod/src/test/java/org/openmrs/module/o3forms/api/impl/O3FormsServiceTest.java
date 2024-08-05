@@ -7,20 +7,23 @@
  * Copyright (C) OpenMRS Inc. OpenMRS is a registered trademark and the OpenMRS
  * graphic logo is a trademark of OpenMRS Inc.
  */
-package org.openmrs.module.o3forms.api;
+package org.openmrs.module.o3forms.api.impl;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasKey;
+import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Date;
 import java.util.Map;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.IOUtils;
+import org.junit.Before;
 import org.junit.Test;
 import org.openmrs.Form;
 import org.openmrs.FormResource;
@@ -29,10 +32,11 @@ import org.openmrs.api.EncounterService;
 import org.openmrs.api.FormService;
 import org.openmrs.api.context.Context;
 import org.openmrs.api.db.ClobDatatypeStorage;
+import org.openmrs.module.o3forms.api.O3FormsService;
 import org.openmrs.module.webservices.rest.SimpleObject;
 import org.openmrs.web.test.BaseModuleWebContextSensitiveTest;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.aop.framework.Advised;
+import org.springframework.aop.support.AopUtils;
 
 public class O3FormsServiceTest extends BaseModuleWebContextSensitiveTest {
 	
@@ -45,6 +49,10 @@ public class O3FormsServiceTest extends BaseModuleWebContextSensitiveTest {
 	private static final String COMPONENT_HOSPITALIZATION_CLOB_UUID = "99ae5eb4-5865-47eb-9032-4d43885d4a2a";
 	
 	private static final String COMPONENT_PRECLINIC_REVIEW_CLOB_UUID = "f305e60b-9ce8-45a4-a430-8b2b878f3061";
+	
+	private static final String SUBFORM_ROOT_FORM_CLOB_UUID = "75d692f0-e83b-4cd3-8962-6c1af6e4f7ce";
+	
+	private static final String SUBFORM_REFERENCE_FORM_CLOB_UUID = "5f1fa423-56ec-414b-9091-017c44395b27";
 	
 	private static final String PAGE_REF_ROOT_FORM_CLOB_UUID = "78b01272-cb05-4668-8986-96912ba737a5";
 	
@@ -71,10 +79,33 @@ public class O3FormsServiceTest extends BaseModuleWebContextSensitiveTest {
 	private static final String ROOT_FORM_TRANSLATIONS_EN_CLOB_UUID = "c80e086e-59c6-4ed4-9459-2efe05b99505";
 	
 	private static final String REFERENCED_FORM_TRANSLATIONS_EN_CLOB_UUID = "24ccfd96-c022-4c42-9019-1f026a4b3ab6";
-	
-	@Autowired
-	@Qualifier("o3forms.O3FormsService")
+
+	private static final String FORM_BY_UNAMBIGUOUS_NAME_NAME = "Form2";
+
+	private static final String FORM_BY_AMBIGUOUS_NAME_UNRETIRED_PUBLISHED_NAME = "Form3";
+
+	private static final String FORM_BY_AMBIGUOUS_NAME_UNRETIRED_PUBLISHED_UUID = "a36585eb-46b7-4ca6-b53d-194e07681254";
+
+	private static final String FORM_BY_AMBIGUOUS_NAME_UNRETIRED_UNPUBLISHED_NAME = "Form4";
+
+	private static final String FORM_BY_AMBIGUOUS_NAME_UNRETIRED_UNPUBLISHED_UUID = "49bb16b4-c836-43a2-93e5-e9d4228611c1";
+
+	private static final String FORM_BY_AMBIGUOUS_NAME_RETIRED_PUBLISHED_NAME = "Form5";
+
+	private static final String FORM_BY_AMBIGUOUS_NAME_RETIRED_PUBLISHED_UUID = "cdc3c7a6-c290-4bbb-8bff-e3d4730443bf";
+
+	private static final String FORM_BY_AMBIGUOUS_NAME_RETIRED_UNPUBLISHED_NAME = "Form6";
+
+	private static final String FORM_BY_AMBIGUOUS_NAME_RETIRED_UNPUBLISHED_UUID = "20ea5282-41d9-4a03-a397-11dae4365fdc";
+
+	private static final String FORM_BY_UUID_UUID = "b569cbff-b361-41f7-bba4-0b70d6b71316";
+
 	O3FormsService o3FormsService;
+
+	@Before
+	public void setup() {
+		o3FormsService = Context.getRegisteredComponent("o3forms.O3FormsService", O3FormsService.class);
+	}
 	
 	@Test
 	public void compile_shouldCombineComponents() throws Exception {
@@ -171,6 +202,63 @@ public class O3FormsServiceTest extends BaseModuleWebContextSensitiveTest {
 		
 		String referenceCompiledVersion = IOUtils
 		        .resourceToString("/forms/test-schemas/adult-return/adult-return-compiled.json", StandardCharsets.UTF_8);
+		ObjectMapper objectMapper = new ObjectMapper();
+		assertThat(objectMapper.valueToTree(result), equalTo(objectMapper.readTree(referenceCompiledVersion)));
+	}
+	
+	@Test
+	public void compile_shouldAddSubformsToPages() throws Exception {
+		// arrange
+		DatatypeService datatypeService = Context.getDatatypeService();
+		FormService formService = Context.getFormService();
+		
+		{
+			String jsonForm = IOUtils.resourceToString("/forms/test-schemas/subform/root-form.json", StandardCharsets.UTF_8);
+			ClobDatatypeStorage datatypeStorage = new ClobDatatypeStorage();
+			datatypeStorage.setValue(jsonForm);
+			datatypeStorage.setUuid(SUBFORM_ROOT_FORM_CLOB_UUID);
+			datatypeService.saveClobDatatypeStorage(datatypeStorage);
+			
+			Form form = new Form();
+			form.setName("root_form");
+			form.setVersion("1.0");
+			form.setUuid(FORM_UUID);
+			formService.saveForm(form);
+			
+			FormResource formSchema = new FormResource();
+			formSchema.setName("JSON schema");
+			formSchema.setForm(form);
+			formSchema.setValueReferenceInternal(SUBFORM_ROOT_FORM_CLOB_UUID);
+			formService.saveFormResource(formSchema);
+		}
+		
+		{
+			String jsonForm = IOUtils.resourceToString("/forms/test-schemas/subform/subform.json", StandardCharsets.UTF_8);
+			ClobDatatypeStorage datatypeStorage = new ClobDatatypeStorage();
+			datatypeStorage.setValue(jsonForm);
+			datatypeStorage.setUuid(SUBFORM_REFERENCE_FORM_CLOB_UUID);
+			datatypeService.saveClobDatatypeStorage(datatypeStorage);
+			
+			Form form = new Form();
+			form.setName("subform");
+			form.setVersion("1.0");
+			formService.saveForm(form);
+			
+			FormResource formSchema = new FormResource();
+			formSchema.setName("JSON schema");
+			formSchema.setForm(form);
+			formSchema.setValueReferenceInternal(SUBFORM_REFERENCE_FORM_CLOB_UUID);
+			formService.saveFormResource(formSchema);
+		}
+		
+		// act
+		SimpleObject result = o3FormsService.compileFormSchema("root_form");
+		
+		// assert
+		assertThat(result, notNullValue());
+		
+		String referenceCompiledVersion = IOUtils.resourceToString("/forms/test-schemas/subform/root-form-compiled.json",
+		    StandardCharsets.UTF_8);
 		ObjectMapper objectMapper = new ObjectMapper();
 		assertThat(objectMapper.valueToTree(result), equalTo(objectMapper.readTree(referenceCompiledVersion)));
 	}
@@ -738,5 +826,230 @@ public class O3FormsServiceTest extends BaseModuleWebContextSensitiveTest {
 		assertThat(translations, hasEntry("key2", "Translation 2"));
 		assertThat(translations, hasEntry("key3", "Translation 3"));
 		assertThat(translations, hasEntry("key4", "Translation 4"));
+	}
+
+	@Test
+	public void getForm_shouldGetFormByUuid() throws Exception {
+		// arrange
+		FormService formService = Context.getFormService();
+
+		{
+			Form form = new Form();
+			form.setName("Form1");
+			form.setVersion("1.0");
+			form.setUuid(FORM_BY_UUID_UUID);
+			formService.saveForm(form);
+		}
+
+		// act
+		Form form = ((O3FormsServiceImpl) unproxyTarget(o3FormsService)).getForm(FORM_BY_UUID_UUID);
+
+		// assert
+		assertThat(form, notNullValue());
+		assertThat(form.getName(), equalTo("Form1"));
+		assertThat(form.getUuid(), equalTo(FORM_BY_UUID_UUID));
+	}
+
+	@Test
+	public void getForm_shouldGetFormByName() throws Exception {
+		// arrange
+		FormService formService = Context.getFormService();
+
+		{
+			Form form = new Form();
+			form.setName(FORM_BY_UNAMBIGUOUS_NAME_NAME);
+			form.setVersion("1.0");
+			formService.saveForm(form);
+		}
+
+		// act
+		Form form = ((O3FormsServiceImpl) unproxyTarget(o3FormsService)).getForm(FORM_BY_UNAMBIGUOUS_NAME_NAME);
+
+		// assert
+		assertThat(form, notNullValue());
+		assertThat(form.getName(), equalTo(FORM_BY_UNAMBIGUOUS_NAME_NAME));
+	}
+
+	@Test
+	public void getForm_shouldGetActivePublishedFormByName() throws Exception {
+		// arrange
+		FormService formService = Context.getFormService();
+
+		{
+			Form form = new Form();
+			form.setName(FORM_BY_AMBIGUOUS_NAME_UNRETIRED_PUBLISHED_NAME);
+			form.setVersion("1.0");
+			form.setRetired(true);
+			form.setRetireReason("Some reason");
+			formService.saveForm(form);
+		}
+
+		{
+			Form form = new Form();
+			form.setName(FORM_BY_AMBIGUOUS_NAME_UNRETIRED_PUBLISHED_NAME);
+			form.setVersion("2.0");
+			form.setRetired(false);
+			form.setPublished(false);
+			formService.saveForm(form);
+		}
+
+		{
+			Form form = new Form();
+			form.setName(FORM_BY_AMBIGUOUS_NAME_UNRETIRED_PUBLISHED_NAME);
+			form.setVersion("3.0");
+			form.setRetired(false);
+			form.setPublished(true);
+			form.setUuid(FORM_BY_AMBIGUOUS_NAME_UNRETIRED_PUBLISHED_UUID);
+			formService.saveForm(form);
+		}
+
+		// act
+		Form form = ((O3FormsServiceImpl) unproxyTarget(o3FormsService)).getForm(FORM_BY_AMBIGUOUS_NAME_UNRETIRED_PUBLISHED_NAME);
+
+		// assert
+		assertThat(form, notNullValue());
+		assertThat(form.getName(), equalTo(FORM_BY_AMBIGUOUS_NAME_UNRETIRED_PUBLISHED_NAME));
+		assertThat(form.getRetired(), is(false));
+		assertThat(form.getPublished(), is(true));
+		assertThat(form.getUuid(), equalTo(FORM_BY_AMBIGUOUS_NAME_UNRETIRED_PUBLISHED_UUID));
+	}
+
+	@Test
+	public void getForm_shouldGetActiveUnpublishedFormByName() throws Exception {
+		// arrange
+		FormService formService = Context.getFormService();
+
+		{
+			Form form = new Form();
+			form.setName(FORM_BY_AMBIGUOUS_NAME_UNRETIRED_UNPUBLISHED_NAME);
+			form.setVersion("1.0");
+			form.setRetired(true);
+			form.setRetireReason("Some reason");
+			formService.saveForm(form);
+		}
+
+		{
+			Form form = new Form();
+			form.setName(FORM_BY_AMBIGUOUS_NAME_UNRETIRED_UNPUBLISHED_NAME);
+			form.setVersion("2.0");
+			form.setRetired(false);
+			form.setPublished(false);
+			form.setUuid(FORM_BY_AMBIGUOUS_NAME_UNRETIRED_UNPUBLISHED_UUID);
+			formService.saveForm(form);
+		}
+
+		// act
+		Form form = ((O3FormsServiceImpl) unproxyTarget(o3FormsService)).getForm(FORM_BY_AMBIGUOUS_NAME_UNRETIRED_UNPUBLISHED_NAME);
+
+		// assert
+		assertThat(form, notNullValue());
+		assertThat(form.getName(), equalTo(FORM_BY_AMBIGUOUS_NAME_UNRETIRED_UNPUBLISHED_NAME));
+		assertThat(form.getRetired(), is(false));
+		assertThat(form.getPublished(), is(false));
+		assertThat(form.getUuid(), equalTo(FORM_BY_AMBIGUOUS_NAME_UNRETIRED_UNPUBLISHED_UUID));
+	}
+
+	@Test
+	public void getForm_shouldGetInactivePublishedFormByName() throws Exception {
+		// arrange
+		FormService formService = Context.getFormService();
+
+		{
+			Form form = new Form();
+			form.setName(FORM_BY_AMBIGUOUS_NAME_RETIRED_PUBLISHED_NAME);
+			form.setVersion("1.0");
+			form.setRetired(true);
+			form.setRetireReason("Some reason");
+			formService.saveForm(form);
+			Thread.sleep(1000); // unfortunately, we need to pause for 1 second so that the dates between
+									  // versions of this form are different
+		}
+
+		{
+			Form form = new Form();
+			form.setName(FORM_BY_AMBIGUOUS_NAME_RETIRED_PUBLISHED_NAME);
+			form.setVersion("2.0");
+			form.setRetired(true);
+			form.setRetireReason("Some reason");
+			form.setPublished(true);
+			formService.saveForm(form);
+			Thread.sleep(1000);
+		}
+
+		{
+			Form form = new Form();
+			form.setName(FORM_BY_AMBIGUOUS_NAME_RETIRED_PUBLISHED_NAME);
+			form.setVersion("3.0");
+			form.setRetired(true);
+			form.setRetireReason("Some reason");
+			form.setPublished(true);
+			form.setUuid(FORM_BY_AMBIGUOUS_NAME_RETIRED_PUBLISHED_UUID);
+			formService.saveForm(form);
+		}
+
+		// act
+		Form form = ((O3FormsServiceImpl) unproxyTarget(o3FormsService)).getForm(FORM_BY_AMBIGUOUS_NAME_RETIRED_PUBLISHED_NAME);
+
+		// assert
+		assertThat(form, notNullValue());
+		assertThat(form.getName(), equalTo(FORM_BY_AMBIGUOUS_NAME_RETIRED_PUBLISHED_NAME));
+		assertThat(form.getRetired(), is(true));
+		assertThat(form.getPublished(), is(true));
+		assertThat(form.getUuid(), equalTo(FORM_BY_AMBIGUOUS_NAME_RETIRED_PUBLISHED_UUID));
+	}
+
+	@Test
+	public void getForm_shouldGetInactiveFormByName() throws Exception {
+		// arrange
+		FormService formService = Context.getFormService();
+
+		{
+			Form form = new Form();
+			form.setName(FORM_BY_AMBIGUOUS_NAME_RETIRED_UNPUBLISHED_NAME);
+			form.setVersion("1.0");
+			form.setRetired(true);
+			form.setRetireReason("Some reason");
+			formService.saveForm(form);
+			Thread.sleep(1000); // unfortunately, we need to pause for 1 second so that the dates between
+									  // versions of this form are different
+		}
+
+		{
+			Form form = new Form();
+			form.setName(FORM_BY_AMBIGUOUS_NAME_RETIRED_UNPUBLISHED_NAME);
+			form.setVersion("2.0");
+			form.setRetired(true);
+			form.setRetireReason("Some reason");
+			formService.saveForm(form);
+			Thread.sleep(1000);
+		}
+
+		{
+			Form form = new Form();
+			form.setName(FORM_BY_AMBIGUOUS_NAME_RETIRED_UNPUBLISHED_NAME);
+			form.setVersion("2.0");
+			form.setRetired(true);
+			form.setRetireReason("Some reason");
+			form.setUuid(FORM_BY_AMBIGUOUS_NAME_RETIRED_UNPUBLISHED_UUID);
+			formService.saveForm(form);
+		}
+
+		// act
+		Form form = ((O3FormsServiceImpl) unproxyTarget(o3FormsService)).getForm(FORM_BY_AMBIGUOUS_NAME_RETIRED_UNPUBLISHED_NAME);
+
+		// assert
+		assertThat(form, notNullValue());
+		assertThat(form.getName(), equalTo(FORM_BY_AMBIGUOUS_NAME_RETIRED_UNPUBLISHED_NAME));
+		assertThat(form.getRetired(), is(true));
+		assertThat(form.getPublished(), is(false));
+		assertThat(form.getUuid(), equalTo(FORM_BY_AMBIGUOUS_NAME_RETIRED_UNPUBLISHED_UUID));
+	}
+
+	@SuppressWarnings("unchecked")
+	private <T> T unproxyTarget(Object proxy) throws Exception {
+		if (proxy instanceof Advised) {
+			return unproxyTarget(((Advised) proxy).getTargetSource().getTarget());
+		}
+		return (T) proxy;
 	}
 }

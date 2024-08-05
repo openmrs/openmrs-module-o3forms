@@ -1,0 +1,29 @@
+{
+  "name": "root_form",
+  "uuid": "6b4d2c09-cc51-458d-8e7d-fa3538280dbe",
+  "processor": "EncounterFormProcessor",
+  "pages": [
+    {
+      "isSubform": true,
+      "subform": {
+        "name": "subform",
+        "form": {
+          "name": "subform",
+          "uuid": "xxxx",
+          "processor": "EncounterFormProcessor",
+          "pages": [
+            {
+              "label": "Referenced Page",
+              "sections": [
+                {
+                  "label": "Referenced Section",
+                  "questions": []
+                }
+              ]
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

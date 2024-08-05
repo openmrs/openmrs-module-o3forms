@@ -1,0 +1,13 @@
+{
+  "name": "root_form",
+  "uuid": "xxxx",
+  "processor": "EncounterFormProcessor",
+  "pages": [
+    {
+      "isSubform": true,
+      "subform": {
+        "name": "subform"
+      }
+    }
+  ]
+}

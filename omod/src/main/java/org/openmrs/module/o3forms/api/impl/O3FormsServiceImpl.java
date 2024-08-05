@@ -15,7 +15,9 @@ import static org.openmrs.module.o3forms.O3FormsConstants.SCHEMA_KEY_ANSWERS;
 import static org.openmrs.module.o3forms.O3FormsConstants.SCHEMA_KEY_CONCEPT;
 import static org.openmrs.module.o3forms.O3FormsConstants.SCHEMA_KEY_FORM;
 import static org.openmrs.module.o3forms.O3FormsConstants.SCHEMA_KEY_FORM_NAME;
+import static org.openmrs.module.o3forms.O3FormsConstants.SCHEMA_KEY_IS_SUBFORM;
 import static org.openmrs.module.o3forms.O3FormsConstants.SCHEMA_KEY_LABEL;
+import static org.openmrs.module.o3forms.O3FormsConstants.SCHEMA_KEY_NAME;
 import static org.openmrs.module.o3forms.O3FormsConstants.SCHEMA_KEY_PAGE;
 import static org.openmrs.module.o3forms.O3FormsConstants.SCHEMA_KEY_PAGES;
 import static org.openmrs.module.o3forms.O3FormsConstants.SCHEMA_KEY_QUESTIONS;
@@ -25,11 +27,13 @@ import static org.openmrs.module.o3forms.O3FormsConstants.SCHEMA_KEY_REFERENCE;
 import static org.openmrs.module.o3forms.O3FormsConstants.SCHEMA_KEY_REFERENCED_FORMS;
 import static org.openmrs.module.o3forms.O3FormsConstants.SCHEMA_KEY_SECTION;
 import static org.openmrs.module.o3forms.O3FormsConstants.SCHEMA_KEY_SECTIONS;
+import static org.openmrs.module.o3forms.O3FormsConstants.SCHEMA_KEY_SUBFORM;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -54,10 +58,10 @@ import org.openmrs.api.FormService;
 import org.openmrs.api.context.Context;
 import org.openmrs.api.db.ClobDatatypeStorage;
 import org.openmrs.api.impl.BaseOpenmrsService;
-import org.openmrs.module.o3forms.api.O3FormsService;
-import org.openmrs.module.o3forms.api.exceptions.FormNotFoundException;
 import org.openmrs.module.o3forms.api.exceptions.FormResourcesNotFoundException;
 import org.openmrs.module.o3forms.api.exceptions.FormSchemaNotFoundException;
+import org.openmrs.module.o3forms.api.O3FormsService;
+import org.openmrs.module.o3forms.api.exceptions.FormNotFoundException;
 import org.openmrs.module.o3forms.api.exceptions.FormSchemaReadException;
 import org.openmrs.module.webservices.rest.SimpleObject;
 import org.openmrs.module.webservices.rest.web.ConversionUtil;
@@ -87,9 +91,10 @@ public class O3FormsServiceImpl extends BaseOpenmrsService implements O3FormsSer
 	
 	private SimpleObject compileFormSchemaInternal(Form form) {
 		// Compilation plan:
-		// 1. Collect referenced forms from main form
-		// 2. Load referenced forms
-		// 3. Walk the tree of pages, sections, and questions, replacing each reference element with the page, section or
+		// 1. Process any subforms
+		// 2. Collect referenced forms from main form
+		// 3. Load referenced forms
+		// 4. Walk the tree of pages, sections, and questions, replacing each reference element with the page, section or
 		//    question it references.
 		SimpleObject formSchema = getFormSchema(form);
 		
@@ -101,179 +106,7 @@ public class O3FormsServiceImpl extends BaseOpenmrsService implements O3FormsSer
 			formSchema.put("encounterType", encounterTypeObject);
 		}
 		
-		Map<String, Map<String, Object>> referencedForms = getReferencedForms(formSchema).orElse(null);
-		
-		if (referencedForms != null) {
-			Object pagesObject = formSchema.get(SCHEMA_KEY_PAGES);
-			
-			if (pagesObject instanceof List) {
-				for (Object page : (List<?>) pagesObject) {
-					if (!(page instanceof Map)) {
-						log.info("Form compilation - page array contains a non-object entry: {}", page);
-						continue;
-					}
-					
-					@SuppressWarnings("unchecked")
-					Map<String, Object> pageMap = (Map<String, Object>) page;
-					Set<String> pageExcludedQuestions = new HashSet<>();
-					if (pageMap.containsKey(SCHEMA_KEY_REFERENCE)) {
-						Map<?, ?> referenceMap = getReferenceObjectFromItem(pageMap).orElse(null);
-						pageMap.clear();
-						
-						if (referenceMap == null) {
-							continue;
-						}
-						
-						if (!referenceMap.containsKey(SCHEMA_KEY_PAGE)) {
-							log.error("Form compilation - reference missing page attribute: {}", referenceMap);
-							continue;
-						}
-						
-						Object referencePageObject = referenceMap.get(SCHEMA_KEY_PAGE);
-						if (!(referencePageObject instanceof String)) {
-							log.error("Form compilation - reference page is not a JSON string: {}", referencePageObject);
-							continue;
-						}
-						
-						Map<String, Object> referencedForm = getReferencedFormForItem(referencedForms, referenceMap)
-						        .orElse(null);
-						
-						if (referencedForm == null) {
-							continue;
-						}
-						
-						pageExcludedQuestions.addAll(getExclusions(referenceMap));
-						
-						getPageByLabel(referencedForm, (String) referencePageObject).map(p -> {
-							pageMap.putAll(p);
-							return p;
-						});
-					}
-					
-					if (pageMap.containsKey(SCHEMA_KEY_SECTIONS)) {
-						Object sectionsObject = pageMap.get(SCHEMA_KEY_SECTIONS);
-						
-						if (!(sectionsObject instanceof List)) {
-							log.warn("Form compilation - section array contains a non-object entry: {}", sectionsObject);
-							continue;
-						}
-						
-						for (Object section : (List<?>) sectionsObject) {
-							if (!(section instanceof Map)) {
-								log.info("Form compilation - sections array contains a non-object entry: {}", section);
-								continue;
-							}
-							
-							@SuppressWarnings("unchecked")
-							Map<String, Object> sectionMap = (Map<String, Object>) section;
-							Set<String> sectionExcludedQuestions = new HashSet<>(pageExcludedQuestions);
-							
-							// wrapped in a one-time do... while loop so that continue statements only break out of the
-							// while loop, so that we process all questions for all sections
-							do {
-								if (sectionMap.containsKey(SCHEMA_KEY_REFERENCE)) {
-									Map<?, ?> referenceMap = getReferenceObjectFromItem(sectionMap).orElse(null);
-									sectionMap.clear();
-									
-									if (referenceMap == null) {
-										continue;
-									}
-									
-									Object referencePageObject = referenceMap.get(SCHEMA_KEY_PAGE);
-									if (!(referencePageObject instanceof String)) {
-										log.error("Form compilation - reference page is not a JSON string: {}",
-										    referencePageObject);
-										continue;
-									}
-									
-									Object referenceSectionObject = referenceMap.get(SCHEMA_KEY_SECTION);
-									if (!(referenceSectionObject instanceof String)) {
-										log.error("Form compilation - reference section is not a JSON string: {}",
-										    referencePageObject);
-										continue;
-									}
-									
-									Map<String, Object> referencedForm = getReferencedFormForItem(referencedForms,
-									    referenceMap).orElse(null);
-									
-									if (referencedForm == null) {
-										continue;
-									}
-									
-									sectionExcludedQuestions.addAll(getExclusions(referenceMap));
-									
-									getSectionByPageAndLabel(referencedForm, (String) referencePageObject,
-									    (String) referenceSectionObject).map(s -> {
-										    sectionMap.putAll(s);
-										    return s;
-									    });
-								}
-							} while (false);
-							
-							Object questionsObj = ((Map<?, ?>) section).get(SCHEMA_KEY_QUESTIONS);
-							if (!(questionsObj instanceof List)) {
-								log.warn("Form compilation - question array contains a non-object entry: {}", questionsObj);
-								continue;
-							}
-							
-							walkQuestions((List<?>) questionsObj, questionMap -> {
-								if (questionMap.containsKey(SCHEMA_KEY_REFERENCE)) {
-									Map<?, ?> referenceMap = getReferenceObjectFromItem(questionMap).orElse(null);
-									questionMap.clear();
-									
-									if (referenceMap == null) {
-										return WalkState.CONTINUE;
-									}
-									
-									Object referenceQuestionIdObject = referenceMap.get(SCHEMA_KEY_QUESTION_ID);
-									if (!(referenceQuestionIdObject instanceof String)) {
-										return WalkState.CONTINUE;
-									}
-									
-									Map<String, Object> referencedForm = getReferencedFormForItem(referencedForms,
-									    referenceMap).orElse(null);
-									
-									if (referencedForm == null) {
-										return WalkState.CONTINUE;
-									}
-									
-									getQuestionById(referencedForm, (String) referenceQuestionIdObject).map(q -> {
-										questionMap.putAll(q);
-										return q;
-									});
-								}
-								
-								return WalkState.CONTINUE;
-							});
-							
-							if (!sectionExcludedQuestions.isEmpty()) {
-								walkQuestions((List<?>) questionsObj, (ignored, questionList) -> {
-									questionList.removeIf(question -> {
-										Map<?, ?> questionMap = (Map<?, ?>) question;
-										
-										if (!questionMap.containsKey("id")) {
-											return false;
-										}
-										
-										Object questionIdObject = questionMap.get("id");
-										
-										if (!(questionIdObject instanceof String)) {
-											return false;
-										}
-										
-										return sectionExcludedQuestions.contains(questionIdObject);
-									});
-									
-									return WalkState.NEXT_LIST;
-								});
-							}
-						}
-					}
-				}
-			}
-		}
-		
-		return formSchema;
+		return applyReferences(applySubForms(formSchema));
 	}
 	
 	@Transactional(readOnly = true)
@@ -376,12 +209,11 @@ public class O3FormsServiceImpl extends BaseOpenmrsService implements O3FormsSer
 					log.warn("Error while loading concept reference {}", conceptReference, e);
 				}
 			}
+			
 			return result;
 		}
 		
-		return new
-		
-		SimpleObject(0);
+		return new SimpleObject(0);
 	}
 	
 	@Transactional(readOnly = true)
@@ -399,6 +231,237 @@ public class O3FormsServiceImpl extends BaseOpenmrsService implements O3FormsSer
 	private static boolean isValidUuid(String uuid) {
 		return uuid != null
 		        && (uuid.length() == 36 || uuid.length() == 38 || uuid.indexOf(' ') < 0 || uuid.indexOf('.') < 0);
+	}
+	
+	private SimpleObject applySubForms(SimpleObject formSchema) {
+		Map<String, SimpleObject> subforms = new HashMap<>();
+		
+		Object pagesObject = formSchema.get(SCHEMA_KEY_PAGES);
+		
+		if (pagesObject instanceof List) {
+			walkPages((List<?>) pagesObject, (page) -> {
+				Object isSubformObject = page.get(SCHEMA_KEY_IS_SUBFORM);
+				
+				if (isSubformObject instanceof Boolean && !((Boolean) isSubformObject)) {
+					return WalkState.CONTINUE;
+				} else if (isSubformObject instanceof String && !Boolean.parseBoolean((String) isSubformObject)) {
+					return WalkState.CONTINUE;
+				}
+				
+				Object subformObject = page.get(SCHEMA_KEY_SUBFORM);
+				
+				if (!(subformObject instanceof Map)) {
+					return WalkState.CONTINUE;
+				}
+				
+				@SuppressWarnings("unchecked")
+				Map<String, Object> subform = (Map<String, Object>) subformObject;
+				
+				Object subformNameObject = subform.get(SCHEMA_KEY_NAME);
+				
+				if (!(subformNameObject instanceof String)) {
+					return WalkState.CONTINUE;
+				}
+				
+				String subformName = (String) subformNameObject;
+				
+				try {
+					SimpleObject subformJson = subforms.computeIfAbsent(subformName, this::getFormSchema);
+					applySubForms(subformJson);
+					subform.put(SCHEMA_KEY_FORM, subformJson);
+				}
+				catch (FormNotFoundException | FormSchemaNotFoundException | FormSchemaReadException e) {
+					log.error("Exception occurred while trying to read subform {}", subformName, e);
+					return WalkState.CONTINUE;
+				}
+				
+				return WalkState.CONTINUE;
+			});
+		}
+		
+		return formSchema;
+	}
+	
+	private SimpleObject applyReferences(SimpleObject formSchema) {
+		return applyReferences(formSchema, null);
+	}
+	
+	private SimpleObject applyReferences(SimpleObject formSchema, Map<String, Map<String, Object>> referencedForms) {
+		if (referencedForms == null) {
+			referencedForms = getReferencedForms(formSchema).orElse(null);
+		} else {
+			getReferencedForms(formSchema).ifPresent(referencedForms::putAll);
+		}
+		
+		final Map<String, Map<String, Object>> finalReferencedForms = referencedForms;
+		
+		if (finalReferencedForms != null) {
+			Object pagesObject = formSchema.get(SCHEMA_KEY_PAGES);
+			
+			if (pagesObject instanceof List) {
+				walkPages((List<?>) pagesObject, (pageMap) -> {
+					Object isSubformObject = pageMap.get(SCHEMA_KEY_IS_SUBFORM);
+					if ((isSubformObject instanceof Boolean && (Boolean) isSubformObject)
+					        || (isSubformObject instanceof String && Boolean.parseBoolean((String) isSubformObject))) {
+						applyReferences(formSchema, finalReferencedForms);
+					}
+					
+					Set<String> pageExcludedQuestions = new HashSet<>();
+					if (pageMap.containsKey(SCHEMA_KEY_REFERENCE)) {
+						Map<?, ?> referenceMap = getReferenceObjectFromItem(pageMap).orElse(null);
+						pageMap.clear();
+						
+						if (referenceMap == null) {
+							return WalkState.CONTINUE;
+						}
+						
+						if (!referenceMap.containsKey(SCHEMA_KEY_PAGE)) {
+							log.error("Form compilation - reference missing page attribute: {}", referenceMap);
+							return WalkState.CONTINUE;
+						}
+						
+						Object referencePageObject = referenceMap.get(SCHEMA_KEY_PAGE);
+						if (!(referencePageObject instanceof String)) {
+							log.error("Form compilation - reference page is not a JSON string: {}", referencePageObject);
+							return WalkState.CONTINUE;
+						}
+						
+						Map<String, Object> referencedForm = getReferencedFormForItem(finalReferencedForms, referenceMap)
+						        .orElse(null);
+						
+						if (referencedForm == null) {
+							return WalkState.CONTINUE;
+						}
+						
+						pageExcludedQuestions.addAll(getExclusions(referenceMap));
+						
+						getPageByLabel(referencedForm, (String) referencePageObject).map(p -> {
+							pageMap.putAll(p);
+							return p;
+						});
+					}
+					
+					if (pageMap.containsKey(SCHEMA_KEY_SECTIONS)) {
+						Object sectionsObject = pageMap.get(SCHEMA_KEY_SECTIONS);
+						
+						if (!(sectionsObject instanceof List)) {
+							log.warn("Form compilation - section array contains a non-object entry: {}", sectionsObject);
+							return WalkState.CONTINUE;
+						}
+						
+						walkSections((List<?>) sectionsObject, (sectionMap) -> {
+							Set<String> sectionExcludedQuestions = new HashSet<>(pageExcludedQuestions);
+							
+							// wrapped in a one-time do... while loop so that continue statements only break out of the
+							// while loop, so that we process all questions for all sections
+							do {
+								if (sectionMap.containsKey(SCHEMA_KEY_REFERENCE)) {
+									Map<?, ?> referenceMap = getReferenceObjectFromItem(sectionMap).orElse(null);
+									sectionMap.clear();
+									
+									if (referenceMap == null) {
+										continue;
+									}
+									
+									Object referencePageObject = referenceMap.get(SCHEMA_KEY_PAGE);
+									if (!(referencePageObject instanceof String)) {
+										log.error("Form compilation - reference page is not a JSON string: {}",
+										    referencePageObject);
+										continue;
+									}
+									
+									Object referenceSectionObject = referenceMap.get(SCHEMA_KEY_SECTION);
+									if (!(referenceSectionObject instanceof String)) {
+										log.error("Form compilation - reference section is not a JSON string: {}",
+										    referencePageObject);
+										continue;
+									}
+									
+									Map<String, Object> referencedForm = getReferencedFormForItem(finalReferencedForms,
+									    referenceMap).orElse(null);
+									
+									if (referencedForm == null) {
+										continue;
+									}
+									
+									sectionExcludedQuestions.addAll(getExclusions(referenceMap));
+									
+									getSectionByPageAndLabel(referencedForm, (String) referencePageObject,
+									    (String) referenceSectionObject).map(s -> {
+										    sectionMap.putAll(s);
+										    return s;
+									    });
+								}
+							} while (false);
+							
+							Object questionsObj = sectionMap.get(SCHEMA_KEY_QUESTIONS);
+							if (!(questionsObj instanceof List)) {
+								log.warn("Form compilation - question array contains a non-object entry: {}", questionsObj);
+								return WalkState.CONTINUE;
+							}
+							
+							walkQuestions((List<?>) questionsObj, questionMap -> {
+								if (questionMap.containsKey(SCHEMA_KEY_REFERENCE)) {
+									Map<?, ?> referenceMap = getReferenceObjectFromItem(questionMap).orElse(null);
+									questionMap.clear();
+									
+									if (referenceMap == null) {
+										return WalkState.CONTINUE;
+									}
+									
+									Object referenceQuestionIdObject = referenceMap.get(SCHEMA_KEY_QUESTION_ID);
+									if (!(referenceQuestionIdObject instanceof String)) {
+										return WalkState.CONTINUE;
+									}
+									
+									Map<String, Object> referencedForm = getReferencedFormForItem(finalReferencedForms,
+									    referenceMap).orElse(null);
+									
+									if (referencedForm == null) {
+										return WalkState.CONTINUE;
+									}
+									
+									getQuestionById(referencedForm, (String) referenceQuestionIdObject).map(q -> {
+										questionMap.putAll(q);
+										return q;
+									});
+								}
+								
+								return WalkState.CONTINUE;
+							});
+							
+							if (!sectionExcludedQuestions.isEmpty()) {
+								walkQuestions((List<?>) questionsObj, (ignored, questionList) -> {
+									questionList.removeIf(question -> {
+										Map<?, ?> questionMap = (Map<?, ?>) question;
+										
+										if (!questionMap.containsKey("id")) {
+											return false;
+										}
+										
+										Object questionIdObject = questionMap.get("id");
+										
+										if (!(questionIdObject instanceof String)) {
+											return false;
+										}
+										
+										return sectionExcludedQuestions.contains(questionIdObject);
+									});
+									
+									return WalkState.NEXT_LIST;
+								});
+							}
+							
+							return WalkState.CONTINUE;
+						});
+					}
+					
+					return WalkState.CONTINUE;
+				});
+			}
+		}
+		
+		return formSchema;
 	}
 	
 	private Map<String, ?> getTranslationsInternal(List<FormResource> formResources) {
@@ -482,7 +545,14 @@ public class O3FormsServiceImpl extends BaseOpenmrsService implements O3FormsSer
 		return Optional.empty();
 	}
 	
-	private Form getForm(String formNameOrUuid) {
+	/**
+	 * This is an <b>internal</b> method made "protected" for testing
+	 *
+	 * @param formNameOrUuid The form name or uuid to find the form object for
+	 * @return The form object
+	 * @throws FormNotFoundException if the form cannot be found
+	 */
+	Form getForm(String formNameOrUuid) {
 		if (formNameOrUuid == null || formNameOrUuid.isEmpty()) {
 			throw new FormNotFoundException("getForm() must be called with a form name");
 		}
@@ -492,48 +562,54 @@ public class O3FormsServiceImpl extends BaseOpenmrsService implements O3FormsSer
 		Form form = formService.getFormByUuid(formNameOrUuid);
 		if (form == null) {
 			// TODO Fix the implementation of getForm() in Core.
-			List<Form> forms = formService.getForms(formNameOrUuid, null, null, false, null, null, null);
+			List<Form> forms = formService.getForms(formNameOrUuid, null, null, null, null, null, null);
 			if (!forms.isEmpty()) {
 				if (forms.size() == 1) {
 					form = forms.get(0);
 				} else {
-					List<Form> candidateForms = new ArrayList<>();
-					for (Form possibleForm : forms) {
-						if (formNameOrUuid.equalsIgnoreCase(possibleForm.getName())) {
-							if (!possibleForm.getRetired() && possibleForm.getPublished()) {
-								form = possibleForm;
+					// logic here:
+					// 1. Favor a published, unretired form above all else
+					// 2. Favor an unretired form if a published one cannot be found
+					// 3. Favor the newest published but retired form
+					// 4. Favor the newest retired form
+					forms.sort((form1, form2) -> {
+						Date form1Date = form1.getDateCreated();
+						if (form1.getDateChanged() != null) {
+							form1Date = form1.getDateChanged();
+						}
+						
+						Date form2Date = form2.getDateCreated();
+						if (form2.getDateChanged() != null) {
+							form2Date = form1.getDateChanged();
+						}
+						
+						return -1 * form1Date.compareTo(form2Date);
+					});
+					
+					for (Form candidateForm : forms) {
+						if (form == null) {
+							form = candidateForm;
+							if (!form.getRetired() && form.getPublished()) {
 								break;
+							}
+						} else {
+							if (!form.getRetired()) {
+								if (!candidateForm.getRetired()) {
+									if (candidateForm.getPublished()) {
+										form = candidateForm;
+										break;
+									}
+								}
 							} else {
-								candidateForms.add(possibleForm);
+								if (!candidateForm.getRetired()) {
+									form = candidateForm;
+								} else {
+									if (!form.getPublished() && candidateForm.getPublished()) {
+										form = candidateForm;
+									}
+								}
 							}
 						}
-					}
-
-					if (form == null) {
-						for (Form candidateForm : candidateForms) {
-							if (candidateForm.getPublished()) {
-								form = candidateForm;
-								break;
-							}
-						}
-					}
-
-					if (form == null && !candidateForms.isEmpty()) {
-						candidateForms.sort((form1, form2) -> {
-							Date form1Date = form1.getDateCreated();
-							if (form1.getDateChanged() == null) {
-								form1Date = form1.getDateChanged();
-							}
-
-							Date form2Date = form2.getDateCreated();
-							if (form2.getDateChanged() == null) {
-								form2Date = form1.getDateChanged();
-							}
-
-							return -1 * form1Date.compareTo(form2Date);
-						});
-
-						form = candidateForms.get(0);
 					}
 				}
 			}
@@ -716,7 +792,7 @@ public class O3FormsServiceImpl extends BaseOpenmrsService implements O3FormsSer
 	/**
 	 * States for the various {@link #walkQuestions(List, Function)} implementations
 	 */
-	private static enum WalkState {
+	private enum WalkState {
 		/**
 		 * Default state; process the next item in the list
 		 */
@@ -730,6 +806,62 @@ public class O3FormsServiceImpl extends BaseOpenmrsService implements O3FormsSer
 		 * contains other questions, those questions will be processed.
 		 */
 		NEXT_LIST;
+	}
+	
+	private static void walkPages(List<?> pages, Function<Map<String, Object>, WalkState> handler) {
+		walkPages(pages, (pageMap, ignored) -> handler.apply(pageMap));
+	}
+	
+	private static void walkPages(List<?> pages, BiFunction<Map<String, Object>, List<?>, WalkState> handler) {
+		WalkState currentState = WalkState.CONTINUE;
+		
+		// wrap list in a new list to avoid ConcurrentModificationExceptions
+		for (Object page : pages) {
+			if (!(page instanceof Map)) {
+				log.info("Form compilation - pages array contains a non-object entry: {}", page);
+				continue;
+			}
+			
+			@SuppressWarnings("unchecked")
+			Map<String, Object> pageMap = (Map<String, Object>) page;
+			
+			if (currentState == WalkState.CONTINUE) {
+				WalkState nextState = handler.apply(pageMap, pages);
+				if (nextState == WalkState.BREAK) {
+					return;
+				} else if (nextState != null) {
+					currentState = nextState;
+				}
+			}
+		}
+	}
+	
+	private static void walkSections(List<?> sections, Function<Map<String, Object>, WalkState> handler) {
+		walkSections(sections, (sectionMap, ignored) -> handler.apply(sectionMap));
+	}
+	
+	private static void walkSections(List<?> sections, BiFunction<Map<String, Object>, List<?>, WalkState> handler) {
+		WalkState currentState = WalkState.CONTINUE;
+		
+		// wrap list in a new list to avoid ConcurrentModificationExceptions
+		for (Object section : new ArrayList<>(sections)) {
+			if (!(section instanceof Map)) {
+				log.info("Form compilation - sections array contains a non-object entry: {}", section);
+				continue;
+			}
+			
+			@SuppressWarnings("unchecked")
+			Map<String, Object> sectionMap = (Map<String, Object>) section;
+			
+			if (currentState == WalkState.CONTINUE) {
+				WalkState nextState = handler.apply(sectionMap, sections);
+				if (nextState == WalkState.BREAK) {
+					return;
+				} else if (nextState != null) {
+					currentState = nextState;
+				}
+			}
+		}
 	}
 	
 	/**

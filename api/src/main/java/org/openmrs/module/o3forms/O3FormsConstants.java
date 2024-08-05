@@ -25,6 +25,10 @@ public class O3FormsConstants {
 	
 	public static final String SCHEMA_KEY_LABEL = "label";
 	
+	public static final String SCHEMA_KEY_IS_SUBFORM = "isSubform";
+	
+	public static final String SCHEMA_KEY_NAME = "name";
+	
 	public static final String SCHEMA_KEY_PAGE = "page";
 	
 	public static final String SCHEMA_KEY_PAGES = "pages";
@@ -42,5 +46,7 @@ public class O3FormsConstants {
 	public static final String SCHEMA_KEY_SECTION = "section";
 	
 	public static final String SCHEMA_KEY_SECTIONS = "sections";
+	
+	public static final String SCHEMA_KEY_SUBFORM = "subform";
 	
 }
