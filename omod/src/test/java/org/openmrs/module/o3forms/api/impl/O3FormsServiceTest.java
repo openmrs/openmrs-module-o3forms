@@ -18,7 +18,6 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 
 import java.nio.charset.StandardCharsets;
-import java.util.Date;
 import java.util.Map;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -36,7 +35,6 @@ import org.openmrs.module.o3forms.api.O3FormsService;
 import org.openmrs.module.webservices.rest.SimpleObject;
 import org.openmrs.web.test.BaseModuleWebContextSensitiveTest;
 import org.springframework.aop.framework.Advised;
-import org.springframework.aop.support.AopUtils;
 
 public class O3FormsServiceTest extends BaseModuleWebContextSensitiveTest {
 	
