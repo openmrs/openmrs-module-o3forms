@@ -77,29 +77,29 @@ public class O3FormsServiceTest extends BaseModuleWebContextSensitiveTest {
 	private static final String ROOT_FORM_TRANSLATIONS_EN_CLOB_UUID = "c80e086e-59c6-4ed4-9459-2efe05b99505";
 	
 	private static final String REFERENCED_FORM_TRANSLATIONS_EN_CLOB_UUID = "24ccfd96-c022-4c42-9019-1f026a4b3ab6";
-	
+
 	private static final String FORM_BY_UNAMBIGUOUS_NAME_NAME = "Form2";
-	
+
 	private static final String FORM_BY_AMBIGUOUS_NAME_UNRETIRED_PUBLISHED_NAME = "Form3";
-	
+
 	private static final String FORM_BY_AMBIGUOUS_NAME_UNRETIRED_PUBLISHED_UUID = "a36585eb-46b7-4ca6-b53d-194e07681254";
-	
+
 	private static final String FORM_BY_AMBIGUOUS_NAME_UNRETIRED_UNPUBLISHED_NAME = "Form4";
-	
+
 	private static final String FORM_BY_AMBIGUOUS_NAME_UNRETIRED_UNPUBLISHED_UUID = "49bb16b4-c836-43a2-93e5-e9d4228611c1";
-	
+
 	private static final String FORM_BY_AMBIGUOUS_NAME_RETIRED_PUBLISHED_NAME = "Form5";
-	
+
 	private static final String FORM_BY_AMBIGUOUS_NAME_RETIRED_PUBLISHED_UUID = "cdc3c7a6-c290-4bbb-8bff-e3d4730443bf";
-	
+
 	private static final String FORM_BY_AMBIGUOUS_NAME_RETIRED_UNPUBLISHED_NAME = "Form6";
-	
+
 	private static final String FORM_BY_AMBIGUOUS_NAME_RETIRED_UNPUBLISHED_UUID = "20ea5282-41d9-4a03-a397-11dae4365fdc";
-	
+
 	private static final String FORM_BY_UUID_UUID = "b569cbff-b361-41f7-bba4-0b70d6b71316";
-	
+
 	O3FormsService o3FormsService;
-	
+
 	@Before
 	public void setup() {
 		o3FormsService = Context.getRegisteredComponent("o3forms.O3FormsService", O3FormsService.class);
@@ -825,12 +825,12 @@ public class O3FormsServiceTest extends BaseModuleWebContextSensitiveTest {
 		assertThat(translations, hasEntry("key3", "Translation 3"));
 		assertThat(translations, hasEntry("key4", "Translation 4"));
 	}
-	
+
 	@Test
 	public void getForm_shouldGetFormByUuid() throws Exception {
 		// arrange
 		FormService formService = Context.getFormService();
-		
+
 		{
 			Form form = new Form();
 			form.setName("Form1");
@@ -838,41 +838,41 @@ public class O3FormsServiceTest extends BaseModuleWebContextSensitiveTest {
 			form.setUuid(FORM_BY_UUID_UUID);
 			formService.saveForm(form);
 		}
-		
+
 		// act
 		Form form = ((O3FormsServiceImpl) unproxyTarget(o3FormsService)).getForm(FORM_BY_UUID_UUID);
-		
+
 		// assert
 		assertThat(form, notNullValue());
 		assertThat(form.getName(), equalTo("Form1"));
 		assertThat(form.getUuid(), equalTo(FORM_BY_UUID_UUID));
 	}
-	
+
 	@Test
 	public void getForm_shouldGetFormByName() throws Exception {
 		// arrange
 		FormService formService = Context.getFormService();
-		
+
 		{
 			Form form = new Form();
 			form.setName(FORM_BY_UNAMBIGUOUS_NAME_NAME);
 			form.setVersion("1.0");
 			formService.saveForm(form);
 		}
-		
+
 		// act
 		Form form = ((O3FormsServiceImpl) unproxyTarget(o3FormsService)).getForm(FORM_BY_UNAMBIGUOUS_NAME_NAME);
-		
+
 		// assert
 		assertThat(form, notNullValue());
 		assertThat(form.getName(), equalTo(FORM_BY_UNAMBIGUOUS_NAME_NAME));
 	}
-	
+
 	@Test
 	public void getForm_shouldGetActivePublishedFormByName() throws Exception {
 		// arrange
 		FormService formService = Context.getFormService();
-		
+
 		{
 			Form form = new Form();
 			form.setName(FORM_BY_AMBIGUOUS_NAME_UNRETIRED_PUBLISHED_NAME);
@@ -881,7 +881,7 @@ public class O3FormsServiceTest extends BaseModuleWebContextSensitiveTest {
 			form.setRetireReason("Some reason");
 			formService.saveForm(form);
 		}
-		
+
 		{
 			Form form = new Form();
 			form.setName(FORM_BY_AMBIGUOUS_NAME_UNRETIRED_PUBLISHED_NAME);
@@ -890,7 +890,7 @@ public class O3FormsServiceTest extends BaseModuleWebContextSensitiveTest {
 			form.setPublished(false);
 			formService.saveForm(form);
 		}
-		
+
 		{
 			Form form = new Form();
 			form.setName(FORM_BY_AMBIGUOUS_NAME_UNRETIRED_PUBLISHED_NAME);
@@ -900,11 +900,10 @@ public class O3FormsServiceTest extends BaseModuleWebContextSensitiveTest {
 			form.setUuid(FORM_BY_AMBIGUOUS_NAME_UNRETIRED_PUBLISHED_UUID);
 			formService.saveForm(form);
 		}
-		
+
 		// act
-		Form form = ((O3FormsServiceImpl) unproxyTarget(o3FormsService))
-		        .getForm(FORM_BY_AMBIGUOUS_NAME_UNRETIRED_PUBLISHED_NAME);
-		
+		Form form = ((O3FormsServiceImpl) unproxyTarget(o3FormsService)).getForm(FORM_BY_AMBIGUOUS_NAME_UNRETIRED_PUBLISHED_NAME);
+
 		// assert
 		assertThat(form, notNullValue());
 		assertThat(form.getName(), equalTo(FORM_BY_AMBIGUOUS_NAME_UNRETIRED_PUBLISHED_NAME));
@@ -912,12 +911,12 @@ public class O3FormsServiceTest extends BaseModuleWebContextSensitiveTest {
 		assertThat(form.getPublished(), is(true));
 		assertThat(form.getUuid(), equalTo(FORM_BY_AMBIGUOUS_NAME_UNRETIRED_PUBLISHED_UUID));
 	}
-	
+
 	@Test
 	public void getForm_shouldGetActiveUnpublishedFormByName() throws Exception {
 		// arrange
 		FormService formService = Context.getFormService();
-		
+
 		{
 			Form form = new Form();
 			form.setName(FORM_BY_AMBIGUOUS_NAME_UNRETIRED_UNPUBLISHED_NAME);
@@ -926,7 +925,7 @@ public class O3FormsServiceTest extends BaseModuleWebContextSensitiveTest {
 			form.setRetireReason("Some reason");
 			formService.saveForm(form);
 		}
-		
+
 		{
 			Form form = new Form();
 			form.setName(FORM_BY_AMBIGUOUS_NAME_UNRETIRED_UNPUBLISHED_NAME);
@@ -936,11 +935,10 @@ public class O3FormsServiceTest extends BaseModuleWebContextSensitiveTest {
 			form.setUuid(FORM_BY_AMBIGUOUS_NAME_UNRETIRED_UNPUBLISHED_UUID);
 			formService.saveForm(form);
 		}
-		
+
 		// act
-		Form form = ((O3FormsServiceImpl) unproxyTarget(o3FormsService))
-		        .getForm(FORM_BY_AMBIGUOUS_NAME_UNRETIRED_UNPUBLISHED_NAME);
-		
+		Form form = ((O3FormsServiceImpl) unproxyTarget(o3FormsService)).getForm(FORM_BY_AMBIGUOUS_NAME_UNRETIRED_UNPUBLISHED_NAME);
+
 		// assert
 		assertThat(form, notNullValue());
 		assertThat(form.getName(), equalTo(FORM_BY_AMBIGUOUS_NAME_UNRETIRED_UNPUBLISHED_NAME));
@@ -948,12 +946,12 @@ public class O3FormsServiceTest extends BaseModuleWebContextSensitiveTest {
 		assertThat(form.getPublished(), is(false));
 		assertThat(form.getUuid(), equalTo(FORM_BY_AMBIGUOUS_NAME_UNRETIRED_UNPUBLISHED_UUID));
 	}
-	
+
 	@Test
 	public void getForm_shouldGetInactivePublishedFormByName() throws Exception {
 		// arrange
 		FormService formService = Context.getFormService();
-		
+
 		{
 			Form form = new Form();
 			form.setName(FORM_BY_AMBIGUOUS_NAME_RETIRED_PUBLISHED_NAME);
@@ -962,9 +960,9 @@ public class O3FormsServiceTest extends BaseModuleWebContextSensitiveTest {
 			form.setRetireReason("Some reason");
 			formService.saveForm(form);
 			Thread.sleep(1000); // unfortunately, we need to pause for 1 second so that the dates between
-			                    // versions of this form are different
+									  // versions of this form are different
 		}
-		
+
 		{
 			Form form = new Form();
 			form.setName(FORM_BY_AMBIGUOUS_NAME_RETIRED_PUBLISHED_NAME);
@@ -975,7 +973,7 @@ public class O3FormsServiceTest extends BaseModuleWebContextSensitiveTest {
 			formService.saveForm(form);
 			Thread.sleep(1000);
 		}
-		
+
 		{
 			Form form = new Form();
 			form.setName(FORM_BY_AMBIGUOUS_NAME_RETIRED_PUBLISHED_NAME);
@@ -986,11 +984,10 @@ public class O3FormsServiceTest extends BaseModuleWebContextSensitiveTest {
 			form.setUuid(FORM_BY_AMBIGUOUS_NAME_RETIRED_PUBLISHED_UUID);
 			formService.saveForm(form);
 		}
-		
+
 		// act
-		Form form = ((O3FormsServiceImpl) unproxyTarget(o3FormsService))
-		        .getForm(FORM_BY_AMBIGUOUS_NAME_RETIRED_PUBLISHED_NAME);
-		
+		Form form = ((O3FormsServiceImpl) unproxyTarget(o3FormsService)).getForm(FORM_BY_AMBIGUOUS_NAME_RETIRED_PUBLISHED_NAME);
+
 		// assert
 		assertThat(form, notNullValue());
 		assertThat(form.getName(), equalTo(FORM_BY_AMBIGUOUS_NAME_RETIRED_PUBLISHED_NAME));
@@ -998,12 +995,12 @@ public class O3FormsServiceTest extends BaseModuleWebContextSensitiveTest {
 		assertThat(form.getPublished(), is(true));
 		assertThat(form.getUuid(), equalTo(FORM_BY_AMBIGUOUS_NAME_RETIRED_PUBLISHED_UUID));
 	}
-	
+
 	@Test
 	public void getForm_shouldGetInactiveFormByName() throws Exception {
 		// arrange
 		FormService formService = Context.getFormService();
-		
+
 		{
 			Form form = new Form();
 			form.setName(FORM_BY_AMBIGUOUS_NAME_RETIRED_UNPUBLISHED_NAME);
@@ -1012,9 +1009,9 @@ public class O3FormsServiceTest extends BaseModuleWebContextSensitiveTest {
 			form.setRetireReason("Some reason");
 			formService.saveForm(form);
 			Thread.sleep(1000); // unfortunately, we need to pause for 1 second so that the dates between
-			                    // versions of this form are different
+									  // versions of this form are different
 		}
-		
+
 		{
 			Form form = new Form();
 			form.setName(FORM_BY_AMBIGUOUS_NAME_RETIRED_UNPUBLISHED_NAME);
@@ -1024,7 +1021,7 @@ public class O3FormsServiceTest extends BaseModuleWebContextSensitiveTest {
 			formService.saveForm(form);
 			Thread.sleep(1000);
 		}
-		
+
 		{
 			Form form = new Form();
 			form.setName(FORM_BY_AMBIGUOUS_NAME_RETIRED_UNPUBLISHED_NAME);
@@ -1034,11 +1031,10 @@ public class O3FormsServiceTest extends BaseModuleWebContextSensitiveTest {
 			form.setUuid(FORM_BY_AMBIGUOUS_NAME_RETIRED_UNPUBLISHED_UUID);
 			formService.saveForm(form);
 		}
-		
+
 		// act
-		Form form = ((O3FormsServiceImpl) unproxyTarget(o3FormsService))
-		        .getForm(FORM_BY_AMBIGUOUS_NAME_RETIRED_UNPUBLISHED_NAME);
-		
+		Form form = ((O3FormsServiceImpl) unproxyTarget(o3FormsService)).getForm(FORM_BY_AMBIGUOUS_NAME_RETIRED_UNPUBLISHED_NAME);
+
 		// assert
 		assertThat(form, notNullValue());
 		assertThat(form.getName(), equalTo(FORM_BY_AMBIGUOUS_NAME_RETIRED_UNPUBLISHED_NAME));
@@ -1046,7 +1042,7 @@ public class O3FormsServiceTest extends BaseModuleWebContextSensitiveTest {
 		assertThat(form.getPublished(), is(false));
 		assertThat(form.getUuid(), equalTo(FORM_BY_AMBIGUOUS_NAME_RETIRED_UNPUBLISHED_UUID));
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	private <T> T unproxyTarget(Object proxy) throws Exception {
 		if (proxy instanceof Advised) {
