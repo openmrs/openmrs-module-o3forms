@@ -580,7 +580,7 @@ public class O3FormsServiceImpl extends BaseOpenmrsService implements O3FormsSer
 						
 						Date form2Date = form2.getDateCreated();
 						if (form2.getDateChanged() != null) {
-							form2Date = form1.getDateChanged();
+							form2Date = form2.getDateChanged();
 						}
 						
 						return -1 * form1Date.compareTo(form2Date);
