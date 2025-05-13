@@ -58,10 +58,10 @@ import org.openmrs.api.FormService;
 import org.openmrs.api.context.Context;
 import org.openmrs.api.db.ClobDatatypeStorage;
 import org.openmrs.api.impl.BaseOpenmrsService;
-import org.openmrs.module.o3forms.api.exceptions.FormResourcesNotFoundException;
-import org.openmrs.module.o3forms.api.exceptions.FormSchemaNotFoundException;
 import org.openmrs.module.o3forms.api.O3FormsService;
 import org.openmrs.module.o3forms.api.exceptions.FormNotFoundException;
+import org.openmrs.module.o3forms.api.exceptions.FormResourcesNotFoundException;
+import org.openmrs.module.o3forms.api.exceptions.FormSchemaNotFoundException;
 import org.openmrs.module.o3forms.api.exceptions.FormSchemaReadException;
 import org.openmrs.module.webservices.rest.SimpleObject;
 import org.openmrs.module.webservices.rest.web.ConversionUtil;
@@ -582,8 +582,9 @@ public class O3FormsServiceImpl extends BaseOpenmrsService implements O3FormsSer
 						if (form2.getDateChanged() != null) {
 							form2Date = form1.getDateChanged();
 						}
-						
-						return -1 * form1Date.compareTo(form2Date);
+
+						// using null as earliest as we then invert the order
+						return -1 * OpenmrsUtil.compareWithNullAsEarliest(form1Date, form2Date);
 					});
 					
 					for (Form candidateForm : forms) {

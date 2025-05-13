@@ -48,7 +48,7 @@ public class O3FormsResourceController extends BaseRestController {
 		
 		if (formNameOrUuid != null && !formNameOrUuid.trim().isEmpty()) {
 			O3FormsService o3FormsService = Context.getService(O3FormsService.class);
-			SimpleObject formSchema = new SimpleObject(0);
+			SimpleObject formSchema;
 			try {
 				formSchema = o3FormsService.compileFormSchema(formNameOrUuid);
 			}
