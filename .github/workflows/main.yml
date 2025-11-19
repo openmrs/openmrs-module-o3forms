@@ -12,7 +12,7 @@ jobs:
     strategy:
       matrix:
         platform: [ ubuntu-latest ]
-        java-version: [ 8 ]
+        java-version: [ 8, 11, 17, 21 ]
 
     runs-on: ${{ matrix.platform }}
     env:
@@ -34,4 +34,4 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: build_artifact
-          path: ${{ github.workspace }}/omod/target
+          path: ${{ github.workspace }}/${{ matrix.java-version }}/omod/target

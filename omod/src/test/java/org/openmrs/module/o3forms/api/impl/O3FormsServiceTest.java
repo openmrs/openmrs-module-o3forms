@@ -22,8 +22,8 @@ import java.util.Map;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.IOUtils;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.openmrs.Form;
 import org.openmrs.FormResource;
 import org.openmrs.api.DatatypeService;
@@ -33,7 +33,7 @@ import org.openmrs.api.context.Context;
 import org.openmrs.api.db.ClobDatatypeStorage;
 import org.openmrs.module.o3forms.api.O3FormsService;
 import org.openmrs.module.webservices.rest.SimpleObject;
-import org.openmrs.web.test.BaseModuleWebContextSensitiveTest;
+import org.openmrs.web.test.jupiter.BaseModuleWebContextSensitiveTest;
 import org.springframework.aop.framework.Advised;
 
 public class O3FormsServiceTest extends BaseModuleWebContextSensitiveTest {
@@ -100,7 +100,7 @@ public class O3FormsServiceTest extends BaseModuleWebContextSensitiveTest {
 	
 	O3FormsService o3FormsService;
 	
-	@Before
+	@BeforeEach
 	public void setup() {
 		o3FormsService = Context.getRegisteredComponent("o3forms.O3FormsService", O3FormsService.class);
 	}
