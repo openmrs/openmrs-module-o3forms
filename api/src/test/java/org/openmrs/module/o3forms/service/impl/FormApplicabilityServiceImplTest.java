@@ -72,10 +72,10 @@ public class FormApplicabilityServiceImplTest {
 		
 		// Build forms
 		formNoRule = form("form-no-rule", "Form Without Rule");
-		formRuleTrue = formWithRule("form-rule-true", "Form Rule True", "true");
-		formRuleFalse = formWithRule("form-rule-false", "Form Rule False", "false");
-		formRuleGenderMale = formWithRule("form-gender-male", "Prenatal Form", "#patient?.gender == 'M'");
-		formRuleVisit = formWithRule("form-visit", "Visit Form", "#visit != null");
+		formRuleTrue = formWithRule("form-rule-true", "Form Rule True");
+		formRuleFalse = formWithRule("form-rule-false", "Form Rule False");
+		formRuleGenderMale = formWithRule("form-gender-male", "Prenatal Form");
+		formRuleVisit = formWithRule("form-visit", "Visit Form");
 		
 		// Build patients
 		malePatient = patient("M");
@@ -217,7 +217,7 @@ public class FormApplicabilityServiceImplTest {
 	/** A malformed / throwing SpEL expression should cause the form to be excluded defensively. */
 	@Test
 	public void getApplicableForms_malformedExpression_formExcluded() {
-		Form badForm = formWithRule("form-bad", "Bad Rule Form", "{{{{invalid spel}}}");
+		Form badForm = formWithRule("form-bad", "Bad Rule Form");
 		when(formService.getFormResourcesForForm(badForm))
 		        .thenReturn(Collections.singletonList(resource(badForm, "{{{{invalid spel}}}")));
 		
@@ -262,7 +262,7 @@ public class FormApplicabilityServiceImplTest {
 		return f;
 	}
 	
-	private static Form formWithRule(String uuid, String name, String spelExpression) {
+	private static Form formWithRule(String uuid, String name) {
 		return form(uuid, name);
 	}
 	

@@ -71,15 +71,13 @@ public class FormApplicabilityServiceImpl implements FormApplicabilityService {
 		for (Form form : forms) {
 			FormResource applicabilityResource = getApplicabilityResource(formService, form);
 			
-			if (applicabilityResource == null) {
-				// AC-7: no rule → always include
-				applicable.add(form);
-				continue;
+			String expression = null;
+			if (applicabilityResource != null) {
+				expression = getResourceValueAsString(applicabilityResource);
 			}
 			
-			String expression = getResourceValueAsString(applicabilityResource);
 			if (expression == null || expression.trim().isEmpty()) {
-				// Treat a blank rule the same as no rule
+				// AC-7: no rule or blank rule → always include
 				applicable.add(form);
 				continue;
 			}
