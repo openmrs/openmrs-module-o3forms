@@ -582,7 +582,7 @@ public class O3FormsServiceImpl extends BaseOpenmrsService implements O3FormsSer
 						if (form2.getDateChanged() != null) {
 							form2Date = form1.getDateChanged();
 						}
-
+						
 						// using null as earliest as we then invert the order
 						return -1 * OpenmrsUtil.compareWithNullAsEarliest(form1Date, form2Date);
 					});
