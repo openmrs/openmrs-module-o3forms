@@ -13,8 +13,8 @@ import static org.openmrs.module.o3forms.O3FormsConstants.DEFAULT_FORMAT;
 import static org.openmrs.module.o3forms.O3FormsWebConstants.REST_NAMESPACE;
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.openmrs.api.context.Context;
 import org.openmrs.module.o3forms.api.O3FormsService;
@@ -41,8 +41,8 @@ public class O3FormsResourceController extends BaseRestController {
 	@RequestMapping(method = GET)
 	@ResponseBody
 	public SimpleObject getO3Form(@PathVariable("formNameOrUuid") String formNameOrUuid,
-	        @RequestParam(defaultValue = "true") String includeConceptReferences, HttpServletRequest request,
-	        HttpServletResponse response) {
+	        @RequestParam(name = "includeConceptReferences", defaultValue = "true") String includeConceptReferences,
+	        HttpServletRequest request, HttpServletResponse response) {
 		// no cache actually means must revalidate; intended to trigger 304s and If-None-Matched when requesting forms
 		response.setHeader("Cache-Control", "no-cache; private");
 		

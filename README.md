@@ -6,7 +6,8 @@ This module provides REST APIs to provide backend services for O3-style forms
 
 ## Requirements
 
-This module requires OpenMRS 2.6.0 or higher and the webservices.rest module 2.40.0 or higher.
+This module requires OpenMRS 3.0.0 or higher and the webservices.rest module 5.0.0 or higher. For OpenMRS 2.x, use a 2.x
+release of this module, maintained on the [2.x](https://github.com/openmrs/openmrs-module-o3forms/tree/2.x) branch.
 
 ## REST APIS
 

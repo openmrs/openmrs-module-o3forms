@@ -73,6 +73,13 @@
     <dependencyManagement>
         <dependencies>
             <dependency>
+                <groupId>org.openmrs</groupId>
+                <artifactId>openmrs-bom</artifactId>
+                <version>${openmrsPlatformVersion}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
                 <groupId>org.openmrs.api</groupId>
                 <artifactId>openmrs-api</artifactId>
                 <version>${openmrsPlatformVersion}</version>
@@ -110,28 +117,6 @@
                 <version>${openmrsPlatformVersion}</version>
                 <type>pom</type>
                 <scope>test</scope>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.mockito</groupId>
-                        <artifactId>mockito-all</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.powermock</groupId>
-                        <artifactId>powermock-module-junit4</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.powermock</groupId>
-                        <artifactId>powermock-api-mockito</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.hamcrest</groupId>
-                        <artifactId>hamcrest-all</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>stax</groupId>
-                        <artifactId>stax-api</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.openmrs.module</groupId>
@@ -142,12 +127,6 @@
                 <groupId>org.projectlombok</groupId>
                 <artifactId>lombok</artifactId>
                 <version>${lombokVersion}</version>
-                <scope>provided</scope>
-            </dependency>
-            <dependency>
-                <groupId>javax.servlet</groupId>
-                <artifactId>javax.servlet-api</artifactId>
-                <version>4.0.1</version>
                 <scope>provided</scope>
             </dependency>
         </dependencies>
@@ -441,7 +420,7 @@
                         <dependency>
                             <groupId>org.openmrs.tools</groupId>
                             <artifactId>openmrs-tools</artifactId>
-                            <version>${openmrsPlatformVersion}</version>
+                            <version>${openmrsPlatformToolsVersion}</version>
                         </dependency>
                     </dependencies>
                     <executions>
@@ -455,9 +434,9 @@
                 <plugin>
                     <groupId>net.revelc.code</groupId>
                     <artifactId>impsort-maven-plugin</artifactId>
-                    <version>1.6.2</version>
+                    <version>1.13.0</version>
                     <configuration>
-                        <groups>javax, java, *</groups>
+                        <groups>jakarta, javax, java, *</groups>
                         <removeUnused>true</removeUnused>
                     </configuration>
                     <executions>
@@ -480,12 +459,13 @@
     </build>
 
     <properties>
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
+        <maven.compiler.release>21</maven.compiler.release>
+        <maven.compiler.parameters>true</maven.compiler.parameters>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.build.outputEncoding>UTF-8</project.build.outputEncoding>
-        <openmrsPlatformVersion>2.7.7</openmrsPlatformVersion>
+        <openmrsPlatformVersion>3.0.0-SNAPSHOT</openmrsPlatformVersion>
+        <openmrsPlatformToolsVersion>2.7.7</openmrsPlatformToolsVersion>
         <lombokVersion>1.18.28</lombokVersion>
-        <webserviceRestVersion>3.0.0</webserviceRestVersion>
+        <webserviceRestVersion>5.0.0-SNAPSHOT</webserviceRestVersion>
     </properties>
 </project>
