@@ -2,9 +2,9 @@ name: Build with Maven
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, core-3.x ]
   pull_request:
-    branches: [ main ]
+    branches: [ main, core-3.x ]
   workflow_dispatch:
 
 concurrency:
